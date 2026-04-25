@@ -446,6 +446,16 @@ export default function WorldMap() {
         errors={errs}
         displayedTs={displayedTs}
         isLive={isLive}
+        history={history}
+        timeline={timeline}
+        onCursorTs={(ts) => {
+          if (timeline.length === 0) return;
+          const start = timeline[0];
+          const end = timeline[timeline.length - 1];
+          const pct = Math.max(0, Math.min(1, (ts - start) / Math.max(1, end - start)));
+          setSliderPct(pct);
+          setIsLive(pct >= 0.995);
+        }}
         onClose={() => setSelected(null)}
       />
 
@@ -506,36 +516,51 @@ function TimeSlider({
         </span>
       </div>
 
-      <input
-        type="range"
-        min="0"
-        max="1000"
-        value={Math.round(sliderPct * 1000)}
-        aria-label="Time slider — drag to scrub through the past 24 hours of grid data"
-        onChange={(e) => {
-          const pct = Number(e.target.value) / 1000;
-          onChange(pct, pct >= 0.995);
-        }}
-        className="w-full h-1.5 rounded-full appearance-none bg-[rgba(255,255,255,0.1)] cursor-pointer
-                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
-                   [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-accent-hot)]
-                   [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-slide-bg)]
-                   [&::-webkit-slider-thumb]:shadow-[0_0_0_3px_rgba(255,107,53,0.25)]
-                   [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full
-                   [&::-moz-range-thumb]:bg-[var(--color-accent-hot)] [&::-moz-range-thumb]:border-2
-                   [&::-moz-range-thumb]:border-[var(--color-slide-bg)]"
-      />
+      <div className="relative">
+        <input
+          type="range"
+          min="0"
+          max="1000"
+          value={Math.round(sliderPct * 1000)}
+          aria-label="Time slider — drag to scrub through the past 24 hours of grid data"
+          onChange={(e) => {
+            const pct = Number(e.target.value) / 1000;
+            onChange(pct, pct >= 0.995);
+          }}
+          className="w-full h-1.5 rounded-full appearance-none bg-[rgba(255,255,255,0.1)] cursor-pointer relative z-10
+                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
+                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-accent-hot)]
+                     [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-slide-bg)]
+                     [&::-webkit-slider-thumb]:shadow-[0_0_0_3px_rgba(255,107,53,0.25)]
+                     [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full
+                     [&::-moz-range-thumb]:bg-[var(--color-accent-hot)] [&::-moz-range-thumb]:border-2
+                     [&::-moz-range-thumb]:border-[var(--color-slide-bg)]"
+        />
+        {/* Hour tick marks every 6h (4 ticks across 24h) */}
+        <div className="absolute inset-x-0 top-3.5 flex justify-between pointer-events-none">
+          {[0, 0.25, 0.5, 0.75, 1].map((p) => {
+            const ts = startTs + p * (endTs - startTs);
+            const label = new Date(ts).getUTCHours().toString().padStart(2, "0") + ":00";
+            return (
+              <div key={p} className="flex flex-col items-center" style={{ transform: p === 0 ? "translateX(0)" : p === 1 ? "translateX(0)" : "translateX(-50%)", marginLeft: p === 0 ? 0 : undefined, marginRight: p === 1 ? 0 : undefined }}>
+                <span className="block w-px h-1.5 bg-[rgba(255,255,255,0.2)]" />
+                <span className="text-[8px] font-mono text-[var(--color-text-muted)] mt-0.5">{label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      <div className="flex justify-between text-[9px] font-mono text-[var(--color-text-muted)] tabular-nums mt-1">
-        <span>{new Date(startTs).toUTCString().slice(5, 22)} UTC</span>
-        <span>{new Date(endTs).toUTCString().slice(17, 22)} UTC</span>
+      <div className="flex justify-between text-[9px] font-mono text-[var(--color-text-muted)] tabular-nums mt-5">
+        <span>{new Date(startTs).toUTCString().slice(5, 11)}</span>
+        <span>{new Date(endTs).toUTCString().slice(5, 11)}</span>
       </div>
     </div>
   );
 }
 
 function DetailPanel({
-  countryId, countryName, mapping, currentByIso, spot, errors, displayedTs, isLive, onClose,
+  countryId, countryName, mapping, currentByIso, spot, errors, displayedTs, isLive, history, timeline, onCursorTs, onClose,
 }: {
   countryId: string | null;
   countryName: string | undefined;
@@ -545,6 +570,9 @@ function DetailPanel({
   errors: Partial<Record<ISO, string>>;
   displayedTs: number;
   isLive: boolean;
+  history: Partial<Record<ISO, HistoricalSeries>>;
+  timeline: number[];
+  onCursorTs: (ts: number) => void;
   onClose: () => void;
 }) {
   const open = !!(countryId && mapping && mapping.length > 0);
@@ -562,6 +590,35 @@ function DetailPanel({
       aggregateMix[fuel] = (aggregateMix[fuel] ?? 0) + mw * weight;
     }
   }
+
+  // Merge per-ISO 24h history into a single series for this country.
+  // For each timestamp in the union, compute weighted-avg CI + summed MW per fuel.
+  const mergedSeries: Array<{ ts: number; ci: number; mix: Record<string, number> }> = (() => {
+    const isoSeries = mapping
+      .map(m => ({ weight: m.weight, series: history[m.iso]?.series ?? [] }))
+      .filter(s => s.series.length > 0);
+    if (isoSeries.length === 0) return [];
+    // Use the longest series as the timeline anchor.
+    const anchor = isoSeries.reduce((a, b) => (b.series.length > a.series.length ? b : a)).series;
+    return anchor.map((_, i) => {
+      let ci = 0, w = 0;
+      const mix: Record<string, number> = {};
+      for (const { weight, series } of isoSeries) {
+        const s = series[Math.min(i, series.length - 1)];
+        if (!s) continue;
+        ci += s.ci_g_per_kwh * weight;
+        w += weight;
+        for (const [fuel, mw] of Object.entries(s.generation_mw)) {
+          mix[fuel] = (mix[fuel] ?? 0) + Math.max(mw, 0) * weight;
+        }
+      }
+      return {
+        ts: new Date(anchor[i].ts).getTime(),
+        ci: w > 0 ? ci / w : 0,
+        mix,
+      };
+    });
+  })();
   const ci = weightSum > 0 ? aggregateCI / weightSum : undefined;
   const totalMW = Object.values(aggregateMix).reduce((s, v) => s + Math.max(v, 0), 0) || 1;
   const sortedFuels = Object.entries(aggregateMix)
@@ -656,8 +713,16 @@ function DetailPanel({
           );
         })()}
 
+        {/* Time-series charts (Electricity-Maps style) */}
+        {mergedSeries.length > 1 && (
+          <>
+            <CIAreaChart series={mergedSeries} cursorTs={displayedTs} onCursorTs={onCursorTs} />
+            <MixStackChart series={mergedSeries} fuelColor={fuelColor} cursorTs={displayedTs} onCursorTs={onCursorTs} />
+          </>
+        )}
+
         <h4 className="text-xs font-semibold mb-2 flex items-center justify-between text-[var(--color-text-muted)] uppercase tracking-wider">
-          <span>Generation mix</span>
+          <span>Generation mix · now</span>
           <span className="font-mono">MW</span>
         </h4>
         <div className="space-y-1.5">
@@ -692,4 +757,180 @@ function rgbA(rgb: string, a: number): string {
   const m = rgb.match(/rgb\(([^)]+)\)/);
   if (!m) return rgb;
   return `rgba(${m[1]}, ${a})`;
+}
+
+// Carbon-intensity area chart over 24h. Click anywhere → moves the global cursor.
+function CIAreaChart({
+  series, cursorTs, onCursorTs,
+}: {
+  series: Array<{ ts: number; ci: number; mix: Record<string, number> }>;
+  cursorTs: number;
+  onCursorTs: (ts: number) => void;
+}) {
+  const W = 360, H = 90, P = { l: 0, r: 0, t: 8, b: 16 };
+  const innerW = W - P.l - P.r;
+  const innerH = H - P.t - P.b;
+  const n = series.length;
+  const tsMin = series[0].ts;
+  const tsMax = series[n - 1].ts;
+  const valMax = Math.max(50, ...series.map(s => s.ci));
+
+  const xFor = (ts: number) => P.l + ((ts - tsMin) / Math.max(1, tsMax - tsMin)) * innerW;
+  const yFor = (v: number) => P.t + innerH - (v / valMax) * innerH;
+
+  const linePath = series.map((s, i) => `${i === 0 ? "M" : "L"} ${xFor(s.ts).toFixed(1)} ${yFor(s.ci).toFixed(1)}`).join(" ");
+  const areaPath = `${linePath} L ${xFor(tsMax).toFixed(1)} ${(P.t + innerH).toFixed(1)} L ${xFor(tsMin).toFixed(1)} ${(P.t + innerH).toFixed(1)} Z`;
+
+  const cursorX = xFor(Math.max(tsMin, Math.min(tsMax, cursorTs)));
+  const idxAtCursor = Math.max(0, Math.min(n - 1, series.findIndex(s => s.ts >= cursorTs)));
+  const valAtCursor = series[idxAtCursor]?.ci ?? series[n - 1].ci;
+
+  function handlePointer(e: React.PointerEvent<SVGSVGElement>) {
+    const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * W - P.l;
+    const pct = Math.max(0, Math.min(1, x / innerW));
+    onCursorTs(tsMin + pct * (tsMax - tsMin));
+  }
+
+  // x-axis hour ticks: 0h, 6h, 12h, 18h, 24h
+  const ticks: Array<{ ts: number; label: string }> = [];
+  for (let frac = 0; frac <= 1.0001; frac += 0.25) {
+    const ts = tsMin + frac * (tsMax - tsMin);
+    const d = new Date(ts);
+    ticks.push({ ts, label: d.getUTCHours().toString().padStart(2, "0") + ":00" });
+  }
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-baseline justify-between mb-1">
+        <h4 className="text-xs font-semibold text-[var(--color-text-light)]">Carbon intensity · 24h</h4>
+        <span className="text-[10px] text-[var(--color-text-muted)] font-mono tabular-nums">
+          {Math.round(valAtCursor)} gCO₂/kWh
+        </span>
+      </div>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full select-none cursor-crosshair"
+        onPointerDown={handlePointer}
+        onPointerMove={(e) => { if (e.buttons === 1) handlePointer(e); }}
+      >
+        <defs>
+          <linearGradient id="ci-grad" x1="0" x2="1" y1="0" y2="0">
+            {CI_STOPS.map(([g, [r, gn, b]], i) => (
+              <stop key={i} offset={`${(g / 1500) * 100}%`} stopColor={`rgba(${r},${gn},${b},0.45)`} />
+            ))}
+          </linearGradient>
+          <linearGradient id="ci-stroke" x1="0" x2="1" y1="0" y2="0">
+            {CI_STOPS.map(([g, [r, gn, b]], i) => (
+              <stop key={i} offset={`${(g / 1500) * 100}%`} stopColor={`rgb(${r},${gn},${b})`} />
+            ))}
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill="url(#ci-grad)" />
+        <path d={linePath} stroke="url(#ci-stroke)" strokeWidth={1.5} fill="none" />
+        {/* hour gridlines */}
+        {ticks.slice(1, -1).map((t, i) => (
+          <line key={i} x1={xFor(t.ts)} y1={P.t} x2={xFor(t.ts)} y2={P.t + innerH} stroke="rgba(255,255,255,0.06)" />
+        ))}
+        {/* cursor */}
+        <line x1={cursorX} y1={P.t} x2={cursorX} y2={P.t + innerH} stroke="var(--color-accent-hot)" strokeWidth={1} strokeDasharray="2 2" />
+        <circle cx={cursorX} cy={yFor(valAtCursor)} r={3} fill="var(--color-accent-hot)" stroke="var(--color-slide-bg)" strokeWidth={1.5} />
+        {/* x-axis labels */}
+        {ticks.map((t, i) => (
+          <text
+            key={i}
+            x={xFor(t.ts)}
+            y={H - 2}
+            fontSize="8"
+            fill="rgba(255,255,255,0.4)"
+            textAnchor={i === 0 ? "start" : i === ticks.length - 1 ? "end" : "middle"}
+            fontFamily="ui-monospace, monospace"
+          >
+            {t.label}
+          </text>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+// Stacked-area generation mix chart (top fuels). Click → cursor.
+function MixStackChart({
+  series, fuelColor, cursorTs, onCursorTs,
+}: {
+  series: Array<{ ts: number; ci: number; mix: Record<string, number> }>;
+  fuelColor: Record<string, string>;
+  cursorTs: number;
+  onCursorTs: (ts: number) => void;
+}) {
+  const W = 360, H = 100, P = { t: 4, b: 4 };
+  const innerH = H - P.t - P.b;
+  const n = series.length;
+  const tsMin = series[0].ts;
+  const tsMax = series[n - 1].ts;
+  const xFor = (ts: number) => ((ts - tsMin) / Math.max(1, tsMax - tsMin)) * W;
+
+  // Pick top fuels by mean MW share across the window
+  const fuelTotals: Record<string, number> = {};
+  for (const s of series) for (const [f, mw] of Object.entries(s.mix)) fuelTotals[f] = (fuelTotals[f] ?? 0) + mw;
+  const fuels = Object.entries(fuelTotals).sort((a, b) => b[1] - a[1]).map(([f]) => f);
+
+  // Per-timestep totals for normalization
+  const totals = series.map(s => Object.values(s.mix).reduce((a, b) => a + Math.max(b, 0), 0) || 1);
+  const yFor = (cumPct: number) => P.t + innerH - cumPct * innerH;
+
+  // Build per-fuel area paths (bottom-up stack)
+  const layers = fuels.map((fuel) => {
+    const top: number[] = []; // cumulative-with-this-fuel pct per ts
+    const bottom: number[] = []; // cumulative-without-this-fuel pct per ts
+    series.forEach((s, i) => {
+      const below = fuels.slice(0, fuels.indexOf(fuel)).reduce((acc, f) => acc + Math.max(s.mix[f] ?? 0, 0), 0);
+      const here = Math.max(s.mix[fuel] ?? 0, 0);
+      bottom.push(below / totals[i]);
+      top.push((below + here) / totals[i]);
+    });
+    let path = `M ${xFor(series[0].ts).toFixed(1)} ${yFor(top[0]).toFixed(1)}`;
+    for (let i = 1; i < n; i++) path += ` L ${xFor(series[i].ts).toFixed(1)} ${yFor(top[i]).toFixed(1)}`;
+    for (let i = n - 1; i >= 0; i--) path += ` L ${xFor(series[i].ts).toFixed(1)} ${yFor(bottom[i]).toFixed(1)}`;
+    path += " Z";
+    return { fuel, path, color: fuelColor[fuel] ?? "#6B7280" };
+  });
+
+  const cursorX = xFor(Math.max(tsMin, Math.min(tsMax, cursorTs)));
+
+  function handlePointer(e: React.PointerEvent<SVGSVGElement>) {
+    const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * W;
+    const pct = Math.max(0, Math.min(1, x / W));
+    onCursorTs(tsMin + pct * (tsMax - tsMin));
+  }
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-baseline justify-between mb-1">
+        <h4 className="text-xs font-semibold text-[var(--color-text-light)]">Generation mix · 24h</h4>
+        <span className="text-[10px] text-[var(--color-text-muted)] font-mono">stacked %</span>
+      </div>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full select-none cursor-crosshair"
+        onPointerDown={handlePointer}
+        onPointerMove={(e) => { if (e.buttons === 1) handlePointer(e); }}
+      >
+        {layers.map((l, i) => (
+          <path key={i} d={l.path} fill={l.color} fillOpacity={0.85} />
+        ))}
+        <line x1={cursorX} y1={P.t} x2={cursorX} y2={P.t + innerH} stroke="var(--color-accent-hot)" strokeWidth={1} strokeDasharray="2 2" />
+      </svg>
+      {/* Compact legend */}
+      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+        {layers.slice(0, 8).map(l => (
+          <span key={l.fuel} className="inline-flex items-center gap-1 text-[9px] text-[var(--color-text-muted)] capitalize">
+            <span className="w-1.5 h-1.5 rounded-sm shrink-0" style={{ background: l.color }} />
+            {l.fuel}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
