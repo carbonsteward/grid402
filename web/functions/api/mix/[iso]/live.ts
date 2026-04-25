@@ -4,6 +4,9 @@
 // ISO-shaped realistic estimates if upstream blocks. The full x402-gated
 // production API runs separately.
 
+import { unzipSync, strFromU8 } from "fflate";
+import duidRegistryJson from "./aemo-duid-registry.json";
+
 interface Env {
   KPX_OPENAPI_KEY?: string;
 }
@@ -91,46 +94,64 @@ async function tryCAISO(): Promise<Mix> {
   });
 }
 
+// ERCOT direct (www.ercot.com) returns 403 from CF egress IPs (Imperva/Incapsula).
+// The Electricity Maps public Cloud Run proxy bypasses the WAF for the same JSON.
+// Self-host this proxy in production; OK for a free hackathon demo.
+const ERCOT_PROXY = "https://us-ca-proxy-jfnx5klx2a-uw.a.run.app";
+
 async function tryERCOT(): Promise<Mix> {
-  // ERCOT blocks CF IPs on the dashboard JSON; try with full browser-like headers + referer.
-  const res = await fetch("https://www.ercot.com/api/1/services/read/dashboards/fuel-mix.json", {
-    headers: {
-      "User-Agent": UA,
-      "Accept": "application/json, text/plain, */*",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Referer": "https://www.ercot.com/gridmktinfo/dashboards/gridconditions/fuelmix",
-      "Origin": "https://www.ercot.com",
-      "Sec-Fetch-Site": "same-origin",
-      "Sec-Fetch-Mode": "cors",
-    },
+  const url = `${ERCOT_PROXY}/api/1/services/read/dashboards/fuel-mix.json?host=https://www.ercot.com`;
+  // The proxy serves the JSON gzip-compressed but CF Workers does not always
+  // auto-decompress (proxy returns content-type that confuses Workers' codec
+  // detection). If the body looks gzipped (1F 8B magic), decompress manually
+  // via DecompressionStream — available in the Workers runtime.
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Grid402/0.1", "Accept": "application/json" },
   });
   if (!res.ok) throw new Error(`ERCOT ${res.status}`);
-  const data = (await res.json()) as any;
-  const dataObj = data?.data ?? data ?? {};
+  const buf = new Uint8Array(await res.arrayBuffer());
+  let text: string;
+  if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
+    const ds = new DecompressionStream("gzip");
+    const stream = new Response(buf).body!.pipeThrough(ds);
+    text = await new Response(stream).text();
+  } else {
+    text = new TextDecoder("utf-8").decode(buf);
+  }
+  const data = JSON.parse(text) as any;
+  const dataObj = data?.data ?? {};
   const dateKeys = Object.keys(dataObj).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k));
-  if (!dateKeys.length) throw new Error("ERCOT empty");
+  if (!dateKeys.length) throw new Error("ERCOT empty data");
   const latestDate = dateKeys.sort().pop()!;
   const intervals = dataObj[latestDate];
   const intKeys = Object.keys(intervals).sort();
-  const latestInt = intKeys[intKeys.length - 1];
-  const m = intervals[latestInt];
+  const latestKey = intKeys[intKeys.length - 1];
+  const fuels = intervals[latestKey] ?? {};
 
-  const get = (k: string) => Number(m[k]?.gen ?? m[k] ?? 0);
+  // The interval key looks like "2026-04-24 22:19:57-0500"; Date.parse handles it
+  // once the space becomes 'T'.
+  const tsMs = Date.parse(latestKey.replace(" ", "T"));
+  const ts = Number.isFinite(tsMs) ? new Date(tsMs).toISOString() : new Date().toISOString();
+
+  const get = (k: string) => Number(fuels[k]?.gen ?? 0);
   const genMW = {
-    solar: get("Solar"), wind: get("Wind"), nuclear: get("Nuclear"),
-    coal: get("Coal"), gas: get("Natural Gas"), hydro: get("Hydro"),
-    biomass: get("Biomass"), other: get("Other") + get("Power Storage"),
+    coal: get("Coal and Lignite"),
+    gas: get("Natural Gas"),
+    nuclear: get("Nuclear"),
+    hydro: get("Hydro"),
+    solar: Math.max(get("Solar"), 0), // can briefly read negative at night
+    wind: get("Wind"),
+    battery: get("Power Storage"), // signed
+    other: get("Other"),
   };
   return shape("ERCOT", genMW, {
-    ts: `${latestDate}T${latestInt}:00Z`,
+    ts,
     src: "https://www.ercot.com/gridmktinfo/dashboards/gridconditions/fuelmix",
     source: "live",
   });
 }
 
 async function tryGB(): Promise<Mix> {
-  // National Energy System Operator (NESO) Carbon Intensity API — public, no key.
-  // /generation gives the current GB generation mix in percentages.
   const res = await fetch("https://api.carbonintensity.org.uk/generation", {
     headers: { "User-Agent": UA, "Accept": "application/json" },
   });
@@ -138,20 +159,17 @@ async function tryGB(): Promise<Mix> {
   const j = (await res.json()) as any;
   const data = j?.data?.generationmix ?? [];
   if (!Array.isArray(data) || !data.length) throw new Error("GB empty");
-  // Normalize fuel names → our canonical set.
   const fuelMap: Record<string, string> = {
     biomass: "biomass", coal: "coal", imports: "imports", gas: "gas",
     nuclear: "nuclear", other: "other", hydro: "hydro", solar: "solar",
     wind: "wind",
   };
-  // GB API returns percentages; assume an indicative 30 GW current load to derive MW.
   const totalMW = 30000;
   const genMW: Record<string, number> = {};
   for (const row of data) {
     const fuel = fuelMap[row.fuel] ?? "other";
     genMW[fuel] = (genMW[fuel] ?? 0) + (Number(row.perc) / 100) * totalMW;
   }
-  // Pull intensity from a separate call so the displayed CI matches NESO.
   let ci: number | undefined;
   try {
     const r2 = await fetch("https://api.carbonintensity.org.uk/intensity", {
@@ -169,6 +187,192 @@ async function tryGB(): Promise<Mix> {
   });
   if (Number.isFinite(ci)) mix.ci_g_per_kwh = ci as number;
   return mix;
+}
+
+// ---------- AEMO live (NEMWEB Dispatch_SCADA) ----------------------------
+
+const AEMO_SCADA_DIR = "https://nemweb.com.au/Reports/Current/Dispatch_SCADA/";
+const AEMO_SCADA_PATTERN = /PUBLIC_DISPATCHSCADA_\d+_\d+\.zip/g;
+
+type AemoRegion = "NSW1" | "QLD1" | "SA1" | "TAS1" | "VIC1" | "NEM";
+
+interface DuidEntry { f: string; r: string; p?: number; b?: "c" | "d" }
+const DUID_REGISTRY: Record<string, DuidEntry> =
+  (duidRegistryJson as { duids: Record<string, DuidEntry> }).duids;
+
+async function findLatestAemoZip(): Promise<string> {
+  const res = await fetch(AEMO_SCADA_DIR);
+  if (!res.ok) throw new Error(`AEMO dir ${res.status}`);
+  const html = await res.text();
+  const all = html.match(AEMO_SCADA_PATTERN);
+  if (!all || !all.length) throw new Error("AEMO dir: no zip files");
+  all.sort();
+  return AEMO_SCADA_DIR + all[all.length - 1];
+}
+
+function splitCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (ch === "," && !inQ) { out.push(cur); cur = ""; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+async function tryAEMO(region: AemoRegion = "NEM"): Promise<Mix> {
+  const zipUrl = await findLatestAemoZip();
+  const zipRes = await fetch(zipUrl);
+  if (!zipRes.ok) throw new Error(`AEMO zip ${zipRes.status}`);
+  const buf = new Uint8Array(await zipRes.arrayBuffer());
+  const files = unzipSync(buf);
+  const csvEntry = Object.entries(files).find(([n]) => n.toUpperCase().endsWith(".CSV"));
+  if (!csvEntry) throw new Error("AEMO zip had no CSV");
+  const csv = strFromU8(csvEntry[1]);
+
+  // NEMDF C/I/D — find UNIT_SCADA section.
+  const lines = csv.split(/\r?\n/);
+  let headers: string[] | null = null;
+  const rows: string[][] = [];
+  let captured = false;
+  for (const line of lines) {
+    if (!line) continue;
+    const cols = splitCsvLine(line);
+    if (cols[0] === "I" && cols[1] === "DISPATCH" && cols[2] === "UNIT_SCADA") {
+      headers = cols.slice(4);
+      captured = true;
+      continue;
+    }
+    if (cols[0] === "I" && captured) break; // next section
+    if (cols[0] === "D" && captured) rows.push(cols.slice(4));
+  }
+  if (!headers) throw new Error("AEMO: no UNIT_SCADA section");
+  const idxSettle = headers.indexOf("SETTLEMENTDATE");
+  const idxDuid = headers.indexOf("DUID");
+  const idxScada = headers.indexOf("SCADAVALUE");
+  if (idxSettle < 0 || idxDuid < 0 || idxScada < 0) throw new Error("AEMO: missing columns");
+
+  // Pick latest settlement timestamp.
+  let latestStamp = "";
+  for (const r of rows) {
+    const s = r[idxSettle] ?? "";
+    if (s > latestStamp) latestStamp = s;
+  }
+  if (!latestStamp) throw new Error("AEMO: no rows");
+
+  const isSystem = region === "NEM";
+  const genMW: Record<string, number> = {};
+  for (const r of rows) {
+    if (r[idxSettle] !== latestStamp) continue;
+    const duid = r[idxDuid] ?? "";
+    const raw = parseFloat(r[idxScada] ?? "0");
+    if (!duid || !Number.isFinite(raw)) continue;
+    const entry = DUID_REGISTRY[duid];
+    if (!isSystem) {
+      if (!entry || entry.r !== region) continue;
+    } else if (!entry) {
+      genMW.other = (genMW.other ?? 0) + Math.max(raw, 0);
+      continue;
+    }
+    let fuel: string = entry.f;
+    let value = raw;
+    if (entry.p === 1) {
+      fuel = raw < 0 ? "battery" : "hydro";
+    } else if (entry.b === "c") {
+      fuel = "battery";
+      value = -Math.abs(raw);
+    } else if (entry.b === "d") {
+      fuel = "battery";
+      value = Math.abs(raw);
+    }
+    // Map our internal "storage" naming to "battery" so it shares CI factor.
+    if (fuel === "storage") fuel = "battery";
+    genMW[fuel] = (genMW[fuel] ?? 0) + value;
+  }
+
+  // NEM time = AEST (UTC+10) fixed, no DST. Convert "YYYY/MM/DD HH:MM:SS".
+  const m = latestStamp.match(/^(\d{4})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+  let ts = new Date().toISOString();
+  if (m) {
+    const asUtc = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+    ts = new Date(asUtc - 10 * 3600 * 1000).toISOString();
+  }
+
+  return shape("AEMO", genMW, {
+    zone: region,
+    ts,
+    src: "https://nemweb.com.au/Reports/Current/Dispatch_SCADA/",
+    source: "live",
+  });
+}
+
+// ---------- KPX live (data.go.kr v2) -------------------------------------
+// As of 2026-04-25 the KPX_OPENAPI_KEY returns "SERVICE KEY IS NOT REGISTERED"
+// from both apis.data.go.kr (B552115) and openapi.kpx.or.kr/openapi/* hosts.
+// We attempt a live call, but it currently always falls back to estimate.
+
+async function tryKPX(env: Env): Promise<Mix> {
+  const key = env.KPX_OPENAPI_KEY;
+  if (!key) throw new Error("KPX no key");
+  const url =
+    `https://apis.data.go.kr/B552115/PvAmountByPwrGen/getPvAmountByPwrGen` +
+    `?serviceKey=${encodeURIComponent(key)}&numOfRows=10&pageNo=1&dataType=JSON`;
+  const res = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!res.ok) throw new Error(`KPX ${res.status}`);
+  const j: any = await res.json();
+  // data.go.kr v2 envelope: { response: { header, body: { items: { item: [...] } } } }
+  const items = j?.response?.body?.items?.item ?? [];
+  const arr: any[] = Array.isArray(items) ? items : (items ? [items] : []);
+  if (!arr.length) {
+    const msg = j?.response?.header?.resultMsg ?? j?.cmmMsgHeader?.errMsg ?? "no items";
+    throw new Error(`KPX: ${msg}`);
+  }
+  // Pick latest by baseDatetime (YYYYMMDDhhmmss).
+  arr.sort((a, b) => String(b.baseDatetime ?? "").localeCompare(String(a.baseDatetime ?? "")));
+  const latest = arr[0];
+  const num = (v: any) => Number(v) || 0;
+  const fp1 = num(latest.fuelPwr1);
+  const fp2 = num(latest.fuelPwr2);
+  const fp3 = num(latest.fuelPwr3);
+  const fp4 = num(latest.fuelPwr4);
+  const fp5 = num(latest.fuelPwr5);
+  const fp6 = num(latest.fuelPwr6);
+  const fp7 = num(latest.fuelPwr7);
+  const fp8 = num(latest.fuelPwr8);
+  const fp9 = num(latest.fuelPwr9);
+  const fp10 = num(latest.fuelPwr10);
+  const pEsmw = num(latest.pEsmw);
+  const bEmsw = num(latest.bEmsw);
+  const genMW = {
+    nuclear: Math.max(fp4, 0),
+    coal: Math.max(fp3 + fp7, 0),
+    gas: Math.max(fp6, 0),
+    oil: Math.max(fp2, 0),
+    hydro: Math.max(fp1, 0),
+    battery: fp5,
+    solar: Math.max(fp8, 0),
+    wind: Math.max(fp9, 0),
+    other: Math.max(fp10 + pEsmw + bEmsw, 0),
+  };
+  // baseDatetime = "YYYYMMDDhhmmss" KST → UTC.
+  const dt = String(latest.baseDatetime ?? "");
+  let ts = new Date().toISOString();
+  if (/^\d{14}$/.test(dt)) {
+    const asUtc = Date.UTC(
+      +dt.slice(0, 4), +dt.slice(4, 6) - 1, +dt.slice(6, 8),
+      +dt.slice(8, 10), +dt.slice(10, 12), +dt.slice(12, 14),
+    );
+    ts = new Date(asUtc - 9 * 3600 * 1000).toISOString();
+  }
+  return shape("KPX", genMW, {
+    zone: "KR",
+    ts,
+    src: "https://apis.data.go.kr/B552115/PvAmountByPwrGen/getPvAmountByPwrGen",
+    source: "live",
+  });
 }
 
 // ---------- Time-aware estimates -----------------------------------------
@@ -210,11 +414,6 @@ function estimateERCOT(): Mix {
   };
   return shape("ERCOT", genMW, { src: "https://www.ercot.com/gridmktinfo/dashboards/gridconditions/fuelmix", source: "estimate" });
 }
-
-// AEMO regional profiles — distinct mixes per state to make the map meaningful.
-// CI ranges roughly match observed historical NEM dispatch: TAS very clean,
-// VIC/NSW/QLD coal-heavy, SA wind-leading.
-type AemoRegion = "NSW1" | "QLD1" | "SA1" | "TAS1" | "VIC1" | "NEM";
 
 const AEMO_REGION_BASES: Record<AemoRegion, () => { coal: number; wind: number; solar: number; gas: number; hydro: number; battery: number; biomass?: number; other?: number }> = {
   NSW1: () => ({ coal: 7500, wind: 850, solar: 2200, gas: 1100, hydro: 600, battery: 200, biomass: 90 }),
@@ -283,10 +482,11 @@ function estimateGB(): Mix {
 
 // ---------- Handler -------------------------------------------------------
 
-export const onRequestGet: PagesFunction<Env> = async ({ params, request }) => {
+export const onRequestGet: PagesFunction<Env> = async ({ params, request, env }) => {
   const iso = String(params.iso ?? "").toUpperCase();
   const url = new URL(request.url);
-  const region = (url.searchParams.get("region") ?? "").toUpperCase() as AemoRegion;
+  const regionRaw = (url.searchParams.get("region") ?? "").toUpperCase();
+  const region: AemoRegion = (regionRaw in AEMO_REGION_BASES ? regionRaw : "NEM") as AemoRegion;
   const cors = {
     "Access-Control-Allow-Origin": "*",
     "Cache-Control": "public, max-age=60",
@@ -301,8 +501,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ params, request }) => {
       case "CAISO": mix = await tryCAISO(); break;
       case "ERCOT": mix = await tryERCOT(); break;
       case "GB":    mix = await tryGB(); break;
-      case "AEMO":  mix = estimateAEMO(region in AEMO_REGION_BASES ? region : "NEM"); break;
-      case "KPX":   mix = estimateKPX(); break;
+      case "AEMO":  mix = await tryAEMO(region); break;
+      case "KPX":   mix = await tryKPX(env); break;
       default:
         return new Response(JSON.stringify({ error: `Unknown ISO: ${iso}` }), { status: 404, headers: cors });
     }
@@ -312,7 +512,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ params, request }) => {
       case "CAISO": mix = estimateCAISO(); break;
       case "ERCOT": mix = estimateERCOT(); break;
       case "GB":    mix = estimateGB(); break;
-      case "AEMO":  mix = estimateAEMO(region in AEMO_REGION_BASES ? region : "NEM"); break;
+      case "AEMO":  mix = estimateAEMO(region); break;
       case "KPX":   mix = estimateKPX(); break;
       default:
         return new Response(JSON.stringify({ error: `Unknown ISO: ${iso}` }), { status: 404, headers: cors });

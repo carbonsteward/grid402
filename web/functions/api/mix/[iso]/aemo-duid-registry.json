@@ -1,0 +1,2068 @@
+{
+  "_meta": {
+    "attribution": "DUID->fuel mapping derived from OpenNEM facility_registry.json (github.com/opennem/opennem, MIT licensed). Slim subset filtered to NEM regions: NSW1/QLD1/VIC1/SA1/TAS1.",
+    "duid_count": 509,
+    "frozen_at": "2026-04-25",
+    "license": "MIT (OpenNEM project)",
+    "schema": {
+      "b": "'c'=battery charging only DUID, 'd'=battery discharging only DUID",
+      "f": "FuelType (canonical Grid402 fuel)",
+      "p": "1 if pumped-hydro DUID (sign-aware: positive=hydro, negative=storage)",
+      "r": "NEM region id"
+    },
+    "source": "https://raw.githubusercontent.com/opennem/opennem/master/opennem/db/fixtures/facility_registry.json"
+  },
+  "duids": {
+    "AGLHAL": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "AGLNOW1": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "AGLSITA1": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "AGLSOM": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "AMCORGR": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "ANGAS1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "ANGAS2": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "ANGAST1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "APPIN": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "APS": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "ARWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "AWABAREF": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "BAKING1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "BALBG1": {
+      "b": "d",
+      "f": "storage",
+      "r": "VIC1"
+    },
+    "BALBL1": {
+      "b": "c",
+      "f": "storage",
+      "r": "VIC1"
+    },
+    "BALDHWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "BANGOWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "BANKSPT1": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "BANN1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "BAPS": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "BARCALDN": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "BARCSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "BARKIPS1": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "BARRON-1": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "BARRON-2": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "BASTYAN": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "BBASEHOS": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "BBDISEL1": {
+      "f": "oil",
+      "r": "TAS1"
+    },
+    "BBTHREE1": {
+      "f": "gas",
+      "r": "TAS1"
+    },
+    "BBTHREE2": {
+      "f": "gas",
+      "r": "TAS1"
+    },
+    "BBTHREE3": {
+      "f": "gas",
+      "r": "TAS1"
+    },
+    "BDL01": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "BDL02": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "BDONGHYD": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "BELLBAY1": {
+      "f": "gas",
+      "r": "TAS1"
+    },
+    "BELLBAY2": {
+      "f": "gas",
+      "r": "TAS1"
+    },
+    "BERWICK": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "BERYLSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "BLAYNEY": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "BLOWERNG": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "BLUFF1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "BLULAKE1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "BNGSF1": {
+      "f": "solar",
+      "r": "SA1"
+    },
+    "BNGSF2": {
+      "f": "solar",
+      "r": "SA1"
+    },
+    "BOCORWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "BODWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "BOLIVAR1": {
+      "f": "biomass",
+      "r": "SA1"
+    },
+    "BOMENSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "BPLANDF1": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "BRAEMAR1": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "BRAEMAR2": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "BRAEMAR3": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "BRAEMAR5": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "BRAEMAR6": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "BRAEMAR7": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "BROADMDW": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "BROKENH1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "BROOKLYN": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "BROWNMT": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "BULGANA1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "BURRIN": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "BUTLERSG": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "BW01": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "BW02": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "BW03": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "BW04": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "BWTR1": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "CALL_A_2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "CALL_A_4": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "CALL_B_1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "CALL_B_2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "CAPTL_WF": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "CATAGUN1": {
+      "f": "oil",
+      "r": "TAS1"
+    },
+    "CATHROCK": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "CBWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "CESF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "CETHANA": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "CG1": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "CG2": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "CG3": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "CG4": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "CHALLHWF": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "CHILDSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "CHPSTWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "CHYTWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "CLARESF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "CLAYTON": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "CLEMGPWF": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "CLERMSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "CLOVER": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "CLUNY": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "CNUNDAWF": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "CODRNGTON": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "COHUNA": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "COLEASF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "COLNSV_1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "COLNSV_2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "COLNSV_3": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "COLNSV_4": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "COLNSV_5": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "COLWF01": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "CONDONG1": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "COOPGWF1": {
+      "f": "wind",
+      "r": "QLD1"
+    },
+    "COPTNHYD": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "CORIO1": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "CPP_3": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "CPP_4": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "CPSA": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "CROOKWEL": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "CROOKWF2": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "CROWLWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "CRURWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "CSPVPS1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "CTHLWF1": {
+      "f": "wind",
+      "r": "TAS1"
+    },
+    "CULLRGWF": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "DAANDINE": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "DALNTH01": {
+      "b": "d",
+      "f": "storage",
+      "r": "SA1"
+    },
+    "DALNTHL1": {
+      "b": "c",
+      "f": "storage",
+      "r": "SA1"
+    },
+    "DARLSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "DARTM1": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "DAYDSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "DDPS1": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "DDSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "DEVILS_G": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "DRYCGT1": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "DRYCGT2": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "DRYCGT3": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "DUNDWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "DUNDWF2": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "DUNDWF3": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "EASTCRK": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "EASTCRK2": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "EDLRGNRD": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "EILDON1": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "EILDON2": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "EILDON3": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "ELAINWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "EMERASF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "ER01": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "ER02": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "ER03": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "ER04": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "ERGT01": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "FINLYSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "FISHER": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "FNWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "GANNBG1": {
+      "b": "d",
+      "f": "storage",
+      "r": "VIC1"
+    },
+    "GANNBL1": {
+      "b": "c",
+      "f": "storage",
+      "r": "VIC1"
+    },
+    "GANNSF1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "GB01": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "GEORGTN1": {
+      "f": "oil",
+      "r": "TAS1"
+    },
+    "GERMCRK": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "GLBWNHYD": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "GLENMAG1": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "GLENNCRK": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "GLRWNSF1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "GOONSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "GORDON": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "GOVILLB1": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "GRANGEAV": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "GRANWF1": {
+      "f": "wind",
+      "r": "TAS1"
+    },
+    "GRIFSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "GROSV1": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "GROSV2": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "GSTONE1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "GSTONE2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "GSTONE3": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "GSTONE4": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "GSTONE5": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "GSTONE6": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "GULLRSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "GULLRWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "GULLRWF2": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "GUNNING1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "GUTHEGA": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "HALAMRD1": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "HALLWF1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "HALLWF2": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "HAMISF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "HAMPTON": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "HAUGHT11": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "HAYMSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "HDWF1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "HDWF2": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "HDWF3": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "HEPWIND1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "HEZ": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "HIGHBRY1": {
+      "f": "biomass",
+      "r": "SA1"
+    },
+    "HLMSEW01": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "HPRG1": {
+      "b": "d",
+      "f": "storage",
+      "r": "SA1"
+    },
+    "HPRL1": {
+      "b": "c",
+      "f": "storage",
+      "r": "SA1"
+    },
+    "HUGSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "HUMENSW": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "HUMEV": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "HVGTS": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "HWPS1": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "HWPS2": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "HWPS3": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "HWPS4": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "HWPS5": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "HWPS6": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "HWPS7": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "HWPS8": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "ICSM": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "INVICTA": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "JACKSGUL": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "JBUTTERS": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "JEMALNG1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "JLA01": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "JLA02": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "JLA03": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "JLA04": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "JLB01": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "JLB02": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "JLB03": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "JNDABNE1": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "JOUNAMA1": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "KAREEYA1": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "KAREEYA2": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "KAREEYA3": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "KAREEYA4": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "KAREEYA5": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "KARSF1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "KEEPIT": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "KIAMSF1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "KIATAWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "KINCUM1": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "KPP_1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "KRCCOGEN": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "KSP1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "LADBROK1": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "LADBROK2": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "LBBG1": {
+      "b": "d",
+      "f": "storage",
+      "r": "SA1"
+    },
+    "LBBL1": {
+      "b": "c",
+      "f": "storage",
+      "r": "SA1"
+    },
+    "LD01": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "LD02": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "LD03": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "LD04": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "LEM_WIL": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "LGAPWF1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "LILYSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "LIMOSF11": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "LIMOSF21": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "LI_WY_CA": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "LKBONNY1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "LKBONNY2": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "LKBONNY3": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "LK_ECHO": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "LNGS1": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "LNGS2": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "LONGFORD": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "LONSDALE": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "LOYYB1": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "LOYYB2": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "LRSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "LUCAS2S2": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "LUCASHGT": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "LYA1": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "LYA2": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "LYA3": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "LYA4": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "MACARTH1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "MACKAYGT": {
+      "f": "oil",
+      "r": "QLD1"
+    },
+    "MACKNTSH": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "MANSLR1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "MAROOWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "MARYRSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "MBAHNTH": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "MCKAY1": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "MCKAY2": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "MEADOWB2": {
+      "f": "oil",
+      "r": "TAS1"
+    },
+    "MEADOWBK": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "MERCER01": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "MEWF1": {
+      "f": "wind",
+      "r": "QLD1"
+    },
+    "MIDDLSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "MIDLDPS1": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "MINTARO": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "MINTNL1": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "MLSP1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "MLWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "MM3": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "MM4": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "MOLNGSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "MOORAWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "MOR1": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "MOR2": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "MOR3": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "MORANBAH": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "MOREESF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "MORNW": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "MORTLK11": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "MORTLK12": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "MP1": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "MP2": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "MPP_1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "MPP_2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "MSTUART1": {
+      "f": "oil",
+      "r": "QLD1"
+    },
+    "MSTUART2": {
+      "f": "oil",
+      "r": "QLD1"
+    },
+    "MSTUART3": {
+      "f": "oil",
+      "r": "QLD1"
+    },
+    "MTGELWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "MTMILLAR": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "MURRAY": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "MUSSELR1": {
+      "f": "wind",
+      "r": "TAS1"
+    },
+    "MUWAWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "MWPS3PV1": {
+      "f": "solar",
+      "r": "SA1"
+    },
+    "MWPS4PV1": {
+      "f": "solar",
+      "r": "SA1"
+    },
+    "NASF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "NBHWF1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "NEVERSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "NINEWIL1": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "NPS": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "NPS1": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "NPS2": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "NPSNL1": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "NPSNL2": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "NUMURSF1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "NYNGAN1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "OAKEY1": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "OAKEY1SF": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "OAKEY2": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "OAKEY2SF": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "OAKLAND1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "OAKY2": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "OAKYCREK": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "OSB-AG": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "PALOONA": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "PARSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "PEDLER1": {
+      "f": "biomass",
+      "r": "SA1"
+    },
+    "PINDARI": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "PIONEER": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "PLAYB-AG": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "PLAYFB1": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "PLAYFB2": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "PLAYFB3": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "PLAYFB4": {
+      "f": "coal",
+      "r": "SA1"
+    },
+    "PMATTAEP": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "PO110NL1": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "POAT110": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "POAT220": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "POR01": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "POR03": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "PORTLAT1": {
+      "f": "oil",
+      "r": "TAS1"
+    },
+    "PORTWF": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "PPCCGT": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "PTSTAN1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "PUMP1": {
+      "f": "hydro",
+      "p": 1,
+      "r": "QLD1"
+    },
+    "PUMP2": {
+      "f": "hydro",
+      "p": 1,
+      "r": "QLD1"
+    },
+    "QPS1": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "QPS2": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "QPS3": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "QPS4": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "QPS5": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "QUERIVE1": {
+      "f": "oil",
+      "r": "TAS1"
+    },
+    "RACOMIL1": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "REDBANK1": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "REECE1": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "REECE2": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "REMOUNT": {
+      "f": "biomass",
+      "r": "TAS1"
+    },
+    "REPULSE": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "ROCHEDAL": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "ROMA_7": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "ROMA_8": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "ROWALLAN": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "ROYALLA1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "RPCG": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "RRSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "RUBICON": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "RUGBYR1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "SALTCRK1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "SAPHWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "SATGN1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "SATGS1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "SHEP1": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "SHGEN": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "SHPUMP": {
+      "f": "hydro",
+      "p": 1,
+      "r": "NSW1"
+    },
+    "SITHE01": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "SKSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "SMCSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "SNOWNTH1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "SNOWSTH1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "SNOWTWN1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "SNOWYP": {
+      "f": "hydro",
+      "p": 1,
+      "r": "NSW1"
+    },
+    "SNUG1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "SNUG2": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "SNUG3": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "SNUGNL1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "SNWYGJP2": {
+      "f": "hydro",
+      "p": 1,
+      "r": "VIC1"
+    },
+    "SRSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "STAN-1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "STAN-2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "STAN-3": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "STAN-4": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "STANV1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "STANV2": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "STAPYLTON1": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "STARHLWF": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "STGEORG1": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "STHBKTEC": {
+      "f": "oil",
+      "r": "QLD1"
+    },
+    "STWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "SUNCOAST": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "SUNRSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "SVALE1": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "SWAN_B_1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "SWAN_B_2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "SWAN_B_3": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "SWAN_B_4": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "SWAN_E": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "TABMILL2": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "TAHMOOR1": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "TALWA1": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "TARALGA1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "TARONG#1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "TARONG#2": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "TARONG#3": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "TARONG#4": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "TARRALEA": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "TATIARA1": {
+      "f": "oil",
+      "r": "SA1"
+    },
+    "TATURA01": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "TBSF1": {
+      "f": "solar",
+      "r": "SA1"
+    },
+    "TEATREE1": {
+      "f": "biomass",
+      "r": "SA1"
+    },
+    "TERALBA": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "TERMSTOR": {
+      "f": "hydro",
+      "r": "SA1"
+    },
+    "TGNSS1": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "THEDROP1": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "TIMWEST": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "TITREE": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "TNPS1": {
+      "f": "coal",
+      "r": "QLD1"
+    },
+    "TOORAWF": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "TORRA1": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TORRA2": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TORRA3": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TORRA4": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TORRB1": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TORRB2": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TORRB3": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TORRB4": {
+      "f": "gas",
+      "r": "SA1"
+    },
+    "TOWER": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "TREVALLN": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "TRIBNL1": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "TRIBUTE": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "TUMUT3": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "TUNGATIN": {
+      "f": "hydro",
+      "r": "TAS1"
+    },
+    "TVCC201": {
+      "f": "gas",
+      "r": "TAS1"
+    },
+    "TVPP104": {
+      "f": "gas",
+      "r": "TAS1"
+    },
+    "UPPTUMUT": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "URANQ11": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "URANQ12": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "URANQ13": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "URANQ14": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "VALDORA1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "VICMILL1": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "VP5": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "VP6": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "VPGS1": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "VPGS2": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "VPGS3": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "VPGS4": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "VPGS5": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "VPGS6": {
+      "f": "gas",
+      "r": "VIC1"
+    },
+    "W/HOE#1": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "W/HOE#2": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "WARWSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "WARWSF2": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "WATERLWF": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "WAUBRAWF": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "WDLNGN01": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "WELLSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "WEMENSF1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "WESTCBT1": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "WESTILL1": {
+      "f": "oil",
+      "r": "NSW1"
+    },
+    "WG01": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "WGWF1": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "WHILL1": {
+      "f": "wind",
+      "r": "QLD1"
+    },
+    "WHIT1": {
+      "f": "biomass",
+      "r": "QLD1"
+    },
+    "WHITSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "WILGAPK": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "WILGB01": {
+      "f": "gas",
+      "r": "NSW1"
+    },
+    "WINGF1_1": {
+      "f": "biomass",
+      "r": "SA1"
+    },
+    "WINGF2_1": {
+      "f": "biomass",
+      "r": "SA1"
+    },
+    "WIVENSH": {
+      "f": "hydro",
+      "r": "QLD1"
+    },
+    "WKIEWA1": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "WKIEWA2": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "WOLLERT1": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "WONWP": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "WOODLWN1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "WOOLNTH1": {
+      "f": "wind",
+      "r": "TAS1"
+    },
+    "WOYWOY1": {
+      "f": "biomass",
+      "r": "NSW1"
+    },
+    "WPWF": {
+      "f": "wind",
+      "r": "SA1"
+    },
+    "WRSF1": {
+      "f": "solar",
+      "r": "NSW1"
+    },
+    "WRWF1": {
+      "f": "wind",
+      "r": "NSW1"
+    },
+    "WW7": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "WW8": {
+      "f": "coal",
+      "r": "NSW1"
+    },
+    "WYANGALA": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "WYANGALB": {
+      "f": "hydro",
+      "r": "NSW1"
+    },
+    "WYNDW": {
+      "f": "biomass",
+      "r": "VIC1"
+    },
+    "YABULU": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "YABULU2": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "YAMBUKWF": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "YARANSF1": {
+      "f": "solar",
+      "r": "QLD1"
+    },
+    "YARWUN_1": {
+      "f": "gas",
+      "r": "QLD1"
+    },
+    "YATSF1": {
+      "f": "solar",
+      "r": "VIC1"
+    },
+    "YAWWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "YENDWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "YSWF1": {
+      "f": "wind",
+      "r": "VIC1"
+    },
+    "YWNGAHYD": {
+      "f": "hydro",
+      "r": "VIC1"
+    },
+    "YWPS1": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "YWPS2": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "YWPS3": {
+      "f": "coal",
+      "r": "VIC1"
+    },
+    "YWPS4": {
+      "f": "coal",
+      "r": "VIC1"
+    }
+  }
+}
