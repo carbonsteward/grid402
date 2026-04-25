@@ -3,38 +3,45 @@ import Layout from "../layouts/Layout.astro";
 import WorldMap from "../components/WorldMap";
 ---
 <Layout>
-  <section class="max-w-6xl mx-auto px-6 pt-16 pb-12">
-    <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-3">
-      Pay-per-call · USDC on Base · x402
-    </p>
-    <h1 class="text-5xl md:text-6xl font-bold leading-tight tracking-tight">
-      Sub-hourly grid mix<br />
-      <span class="text-[var(--color-accent-primary)]">priced by the call.</span>
-    </h1>
-    <p class="mt-5 max-w-2xl text-xl md:text-2xl font-semibold text-[var(--color-text-light)] leading-snug">
-      Time your agents. Route your GPU workloads.
-    </p>
-    <p class="mt-4 max-w-2xl text-lg text-[var(--color-text-muted)] leading-relaxed">
-      Grid402 sells the world's electricity <strong class="text-[var(--color-text-light)]">5-minute generation mix</strong> and
-      its <strong class="text-[var(--color-text-light)]">carbon intensity</strong> as plain HTTP — the input layer agents call before
-      deciding <em>when</em> to run their inference, <em>where</em> to route compute, and <em>which</em> 5-min interval is cleanest.
-      Every request settled in USDC on Base. Spot price comes bundled. No API key. No subscription. No annual contract.
-    </p>
-
-    <div class="mt-8 flex flex-wrap gap-3 text-sm">
-      <a href="/docs/quickstart" class="px-5 py-2.5 rounded-md bg-[var(--color-accent-primary)] text-[var(--color-slide-bg)] font-semibold hover:opacity-90">
-        Quickstart →
-      </a>
-      <a href="/docs/endpoints" class="px-5 py-2.5 rounded-md border border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-mint)]">
-        Endpoints
-      </a>
-      <a href="/docs/x402" class="px-5 py-2.5 rounded-md border border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-mint)]">
-        How x402 works
-      </a>
+  {/* Compact hero strip — keeps the thesis visible without burying the map */}
+  <section class="max-w-[1400px] mx-auto px-6 pt-6 pb-3">
+    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div class="min-w-0">
+        <p class="text-[10px] uppercase tracking-[0.25em] text-[var(--color-accent-primary)] font-semibold mb-1.5">
+          Pay-per-call · USDC on Base · x402
+        </p>
+        <h1 class="text-3xl md:text-4xl font-bold leading-tight tracking-tight">
+          Sub-hourly grid mix, <span class="text-[var(--color-accent-primary)]">priced by the call.</span>
+        </h1>
+        <p class="text-sm text-[var(--color-text-muted)] mt-1.5 max-w-2xl">
+          Click a colored country to see live mix · drag the slider to scrub the past 24 h · every datapoint shipped via x402.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <a href="/use-cases" class="px-3.5 py-2 rounded-md bg-[var(--color-accent-primary)] text-[var(--color-slide-bg)] font-semibold hover:opacity-90">
+          Use cases →
+        </a>
+        <a href="/docs/quickstart" class="px-3.5 py-2 rounded-md border border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-mint)]">
+          Quickstart
+        </a>
+        <a href="/docs/endpoints" class="px-3.5 py-2 rounded-md border border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-mint)]">
+          Endpoints
+        </a>
+      </div>
     </div>
   </section>
 
-  <section class="max-w-6xl mx-auto px-6 pb-8">
+  {/* MAP — primary interface */}
+  <section class="max-w-[1400px] mx-auto px-6 pb-10">
+    <div class="mb-3 flex items-baseline justify-between">
+      <h2 class="text-base md:text-lg font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Live carbon intensity</h2>
+      <span class="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-mono">USA · UK · KOREA · AUSTRALIA</span>
+    </div>
+    <WorldMap client:load />
+  </section>
+
+  {/* What we sell */}
+  <section class="max-w-6xl mx-auto px-6 pb-10">
     <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.04)] p-5 md:p-6">
       <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-2">
         What we actually sell
@@ -59,94 +66,27 @@ import WorldMap from "../components/WorldMap";
     </div>
   </section>
 
-  <section class="max-w-6xl mx-auto px-6 pb-12">
-    <div class="mb-5">
-      <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-2">
-        Who calls this API
-      </p>
-      <h2 class="text-2xl md:text-3xl font-semibold">Four agent scenarios. One pay-per-call API.</h2>
-      <p class="text-sm text-[var(--color-text-muted)] mt-2 max-w-2xl">
-        Every scenario below requires sub-hourly grid data — annual averages can't see the 22-minute
-        windows where it matters. Each maps to one or more of the three signals we sell.
-      </p>
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.03)] p-5">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(0,188,188,0.15)] text-[var(--color-accent-primary)] font-mono font-semibold">Mix + CI</span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">when to run</span>
+  {/* Use-cases teaser linking to the dedicated page */}
+  <section class="max-w-6xl mx-auto px-6 pb-10">
+    <a href="/use-cases" class="block rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] p-5 md:p-6 hover:border-[var(--color-accent-primary)] transition-colors group">
+      <div class="flex items-baseline justify-between gap-4 flex-wrap">
+        <div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-1.5">
+            Who calls this API
+          </p>
+          <h2 class="text-xl md:text-2xl font-semibold">Inference scheduler · GPU router · EV charging · CFE proof</h2>
+          <p class="text-sm text-[var(--color-text-muted)] mt-1.5 max-w-2xl">
+            Four agent scenarios mapped to the three signals we sell. See how each one calls the API.
+          </p>
         </div>
-        <h3 class="font-bold text-lg mb-1.5">Inference scheduler</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
-          The agent calls <code class="font-mono text-xs text-[var(--color-accent-primary)]">/mix/KPX/live</code> every 5 min, sees CI
-          falling from 450 → 312 gCO₂/kWh as solar ramps up, and defers a non-urgent batch by 22 min.
-          A 30% emissions cut on the same workload — invisible to any annual-average API.
-        </p>
+        <span class="text-sm text-[var(--color-accent-primary)] font-semibold group-hover:translate-x-1 transition-transform whitespace-nowrap">
+          See all use cases →
+        </span>
       </div>
-
-      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,208,102,0.03)] p-5">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(255,208,102,0.15)] text-[var(--color-accent-warm)] font-mono font-semibold">Spot</span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">where to run</span>
-        </div>
-        <h3 class="font-bold text-lg mb-1.5">GPU workload router</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
-          Training jobs hit <code class="font-mono text-xs text-[var(--color-accent-warm)]">/spot/ERCOT/HB_NORTH</code>
-          and <code class="font-mono text-xs text-[var(--color-accent-warm)]">/spot/CAISO/TH_NP15</code>, see
-          ERCOT at $18/MWh vs CAISO at $94/MWh, and route the next checkpoint to a Texas region. Per-call
-          arbitrage on wholesale electricity, not retail tariffs.
-        </p>
-      </div>
-
-      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(78,205,196,0.04)] p-5">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(78,205,196,0.18)] text-[var(--color-accent-light)] font-mono font-semibold">Mix + CI + Spot</span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">when + where</span>
-        </div>
-        <h3 class="font-bold text-lg mb-1.5">EV / Tesla charging agent</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
-          Two Superchargers, 3 km apart. The agent sees one is on 70% solar at 11:00 (CI 142, $32/MWh),
-          the other on 60% gas at 18:00 demand-peak (CI 480, $210/MWh). It picks the clean+cheap one.
-          Per-charge: cleaner kWh, lower cost, and a receipt that proves both.
-        </p>
-      </div>
-
-      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,107,53,0.03)] p-5">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(255,107,53,0.15)] text-[var(--color-accent-hot)] font-mono font-semibold">Combined</span>
-          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">audit / proof</span>
-        </div>
-        <h3 class="font-bold text-lg mb-1.5">24/7 CFE proof · DePIN slashing · CBAM</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
-          Every Grid402 response is a signed receipt: which 5-min interval, which zone, what mix, what CI,
-          what spot price. Use it to prove a workload ran on carbon-free electricity, slash DePIN nodes
-          on dirty grids, or file hourly CBAM reports without a $50k consultant.
-        </p>
-      </div>
-    </div>
-
-    <div class="mt-6 rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] p-5">
-      <p class="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold mb-2">
-        Why per-call, not annual
-      </p>
-      <p class="text-base text-[var(--color-text-light)] leading-relaxed">
-        We pulled the top 10 x402 agents on x402scan: <strong class="text-[var(--color-accent-primary)]">8 of 10 run on globally-anycast infra</strong>
-        (Cloudflare Workers, Vercel Edge, GCP global LB). The same call lands in MISO when invoked from
-        Chicago, ERCOT from Houston, and LHR from London. Annual carbon accounting can't capture this —
-        only per-call grid receipts can.
-      </p>
-    </div>
+    </a>
   </section>
 
-  <section class="max-w-[1400px] mx-auto px-6 pb-16">
-    <div class="mb-4 flex items-baseline justify-between">
-      <h2 class="text-2xl font-semibold">Live carbon intensity</h2>
-      <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">USA · UK · KOREA · AUSTRALIA</span>
-    </div>
-    <WorldMap client:load />
-  </section>
-
+  {/* Why mix is the moat */}
   <section class="max-w-6xl mx-auto px-6 pb-24">
     <div class="grid md:grid-cols-3 gap-4">
       <div class="rounded-lg border border-[var(--color-grid-stroke)] p-6">
