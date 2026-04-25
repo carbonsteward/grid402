@@ -390,76 +390,76 @@ export default function WorldMap() {
   const displayedTs = isLive ? (timeline[timeline.length - 1] ?? Date.now()) : (targetTs ?? Date.now());
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="relative rounded-xl overflow-hidden bg-[#0B1220] border border-[var(--color-grid-stroke)]">
-        <div ref={containerRef} className="h-[640px] w-full" />
+    <div className="relative rounded-xl overflow-hidden bg-[#0B1220] border border-[var(--color-grid-stroke)]">
+      <div ref={containerRef} className="h-[640px] w-full" />
 
-        {/* Live indicator (top-left of map) */}
-        <button
-          onClick={() => { setIsLive(true); setSliderPct(1); }}
-          className={`absolute top-4 left-4 flex items-center gap-2 rounded-full backdrop-blur px-3 py-1.5 border transition-all z-20 ${
-            isLive
-              ? "bg-[rgba(255,107,53,0.15)] border-[var(--color-accent-hot)]"
-              : "bg-[rgba(11,18,32,0.85)] border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-hot)]"
-          }`}
-          title={isLive ? "Showing latest data" : "Click to jump back to live"}
-        >
-          <span className="relative inline-flex h-2 w-2">
-            {isLive && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-hot)] opacity-75" />}
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-accent-hot)]" />
-          </span>
-          <span className="text-xs font-mono text-[var(--color-text-light)]">
-            {isLive ? "LIVE" : "← BACK TO LIVE"}
-          </span>
-        </button>
+      {/* Live indicator (top-left of map) */}
+      <button
+        onClick={() => { setIsLive(true); setSliderPct(1); }}
+        className={`absolute top-4 left-4 flex items-center gap-2 rounded-full backdrop-blur px-3 py-1.5 border transition-all z-20 ${
+          isLive
+            ? "bg-[rgba(255,107,53,0.15)] border-[var(--color-accent-hot)]"
+            : "bg-[rgba(11,18,32,0.85)] border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-hot)]"
+        }`}
+        title={isLive ? "Showing latest data" : "Click to jump back to live"}
+      >
+        <span className="relative inline-flex h-2 w-2">
+          {isLive && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-hot)] opacity-75" />}
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-accent-hot)]" />
+        </span>
+        <span className="text-xs font-mono text-[var(--color-text-light)]">
+          {isLive ? "LIVE" : "← BACK TO LIVE"}
+        </span>
+      </button>
 
-        {/* CI legend */}
-        <div className="absolute bottom-3 left-3 max-w-[55%] flex items-center gap-2 rounded-lg bg-[rgba(11,18,32,0.85)] backdrop-blur px-3 py-1.5 border border-[var(--color-grid-stroke)] z-10">
-          <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold whitespace-nowrap">CI</span>
-          <div
-            className="flex-1 h-2 rounded min-w-[100px]"
-            style={{
-              background: `linear-gradient(to right, ${CI_STOPS.map(([g]) => ciColor(g)).join(", ")})`,
-            }}
-          />
-          <span className="text-[10px] font-mono text-[var(--color-text-muted)] whitespace-nowrap">0–1500</span>
-        </div>
-
-        {/* Hint when nothing selected */}
-        {!selected && (
-          <div className="absolute top-4 right-16 z-10 rounded-full bg-[rgba(11,18,32,0.85)] backdrop-blur px-3 py-1.5 border border-[var(--color-grid-stroke)]">
-            <span className="text-xs text-[var(--color-text-muted)]">Click a colored country</span>
-          </div>
-        )}
-
-        {/* Slide-in detail panel (overlay) */}
-        <DetailPanel
-          countryId={selected}
-          countryName={selectedCountryName}
-          mapping={selectedMapping}
-          currentByIso={
-            // For AU sub-state selection, override AEMO snapshot with the region's data
-            isAemoState && aemoSelectedRegion && aemoRegions[aemoSelectedRegion]
-              ? { ...currentByIso, AEMO: aemoRegions[aemoSelectedRegion]! }
-              : currentByIso
-          }
-          spot={spot}
-          errors={errs}
-          displayedTs={displayedTs}
-          isLive={isLive}
-          onClose={() => setSelected(null)}
+      {/* CI legend (top-right area, above slider) */}
+      <div className="absolute top-4 right-16 max-w-[260px] hidden sm:flex items-center gap-2 rounded-lg bg-[rgba(11,18,32,0.85)] backdrop-blur px-3 py-1.5 border border-[var(--color-grid-stroke)] z-10">
+        <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold whitespace-nowrap">gCO₂/kWh</span>
+        <div
+          className="flex-1 h-2 rounded min-w-[100px]"
+          style={{
+            background: `linear-gradient(to right, ${CI_STOPS.map(([g]) => ciColor(g)).join(", ")})`,
+          }}
         />
+        <span className="text-[10px] font-mono text-[var(--color-text-muted)] whitespace-nowrap">0–1500</span>
       </div>
 
-      {/* Time slider below the map */}
-      <TimeSlider
-        timeline={timeline}
-        sliderPct={sliderPct}
-        isLive={isLive}
+      {/* Hint when nothing selected */}
+      {!selected && (
+        <div className="absolute top-16 right-4 z-10 rounded-full bg-[rgba(11,18,32,0.85)] backdrop-blur px-3 py-1.5 border border-[var(--color-grid-stroke)]">
+          <span className="text-xs text-[var(--color-text-muted)]">Click a colored country</span>
+        </div>
+      )}
+
+      {/* Slide-in detail panel (overlay) */}
+      <DetailPanel
+        countryId={selected}
+        countryName={selectedCountryName}
+        mapping={selectedMapping}
+        currentByIso={
+          // For AU sub-state selection, override AEMO snapshot with the region's data
+          isAemoState && aemoSelectedRegion && aemoRegions[aemoSelectedRegion]
+            ? { ...currentByIso, AEMO: aemoRegions[aemoSelectedRegion]! }
+            : currentByIso
+        }
+        spot={spot}
+        errors={errs}
         displayedTs={displayedTs}
-        onChange={(pct, live) => { setSliderPct(pct); setIsLive(live); }}
-        stepMinutes={HISTORY_STEP}
+        isLive={isLive}
+        onClose={() => setSelected(null)}
       />
+
+      {/* Time slider as bottom overlay inside the map (Electricity-Maps pattern) */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-[rgba(11,18,32,0.95)] via-[rgba(11,18,32,0.85)] to-transparent pt-8 pb-3 px-3 sm:px-4">
+        <TimeSlider
+          timeline={timeline}
+          sliderPct={sliderPct}
+          isLive={isLive}
+          displayedTs={displayedTs}
+          onChange={(pct, live) => { setSliderPct(pct); setIsLive(live); }}
+          stepMinutes={HISTORY_STEP}
+        />
+      </div>
     </div>
   );
 }
@@ -476,7 +476,10 @@ function TimeSlider({
 }) {
   if (timeline.length === 0) {
     return (
-      <div className="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] px-4 py-3 text-xs text-[var(--color-text-muted)]">
+      <div
+        className="rounded-lg border border-[var(--color-grid-stroke)] bg-[rgba(11,18,32,0.85)] backdrop-blur px-3 py-2 text-[11px] text-[var(--color-text-muted)]"
+        aria-busy="true"
+      >
         Loading time series…
       </div>
     );
@@ -484,53 +487,48 @@ function TimeSlider({
   const startTs = timeline[0];
   const endTs = timeline[timeline.length - 1];
   const display = new Date(displayedTs);
-  const dateStr = display.toUTCString().slice(0, 16);
+  const dateStr = display.toUTCString().slice(5, 16);
   const timeStr = display.toUTCString().slice(17, 22);
 
   return (
-    <div className="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] px-5 py-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <div>
-          <div className="text-base font-semibold tabular-nums">
+    <div className="rounded-lg border border-[var(--color-grid-stroke)] bg-[rgba(11,18,32,0.92)] backdrop-blur-md px-3 sm:px-4 py-2.5 shadow-lg shadow-black/40">
+      <div className="flex items-baseline justify-between mb-2 gap-2">
+        <div className="flex items-baseline gap-2 min-w-0 flex-wrap">
+          <span className="text-sm font-semibold tabular-nums whitespace-nowrap">
             {dateStr}, <span className="text-[var(--color-accent-hot)]">{timeStr} UTC</span>
-          </div>
-          <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mt-0.5">
+          </span>
+          <span className="text-[9px] uppercase tracking-wider text-[var(--color-text-muted)] whitespace-nowrap">
             {stepMinutes} min · {timeline.length} slots
-          </div>
+          </span>
         </div>
-        <div className="text-xs text-[var(--color-text-muted)] font-mono tabular-nums">
-          {Math.round((displayedTs - startTs) / 60_000)} min from oldest · {Math.round((endTs - displayedTs) / 60_000)} min from now
-        </div>
-      </div>
-
-      <div className="relative">
-        <input
-          type="range"
-          min="0"
-          max="1000"
-          value={Math.round(sliderPct * 1000)}
-          onChange={(e) => {
-            const pct = Number(e.target.value) / 1000;
-            onChange(pct, pct >= 0.995);
-          }}
-          className="w-full h-2 rounded-full appearance-none bg-[rgba(255,255,255,0.08)] cursor-pointer
-                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5
-                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-accent-hot)]
-                     [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-slide-bg)]
-                     [&::-webkit-slider-thumb]:shadow-[0_0_0_3px_rgba(255,107,53,0.25)]
-                     [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full
-                     [&::-moz-range-thumb]:bg-[var(--color-accent-hot)] [&::-moz-range-thumb]:border-2
-                     [&::-moz-range-thumb]:border-[var(--color-slide-bg)]"
-        />
-        {/* Live indicator at right */}
-        <div className="absolute right-0 -top-1 h-4 w-1 bg-[var(--color-accent-hot)] rounded-full pointer-events-none" />
-      </div>
-
-      <div className="flex justify-between text-[10px] font-mono text-[var(--color-text-muted)] tabular-nums mt-2">
-        <span>{new Date(startTs).toUTCString().slice(5, 22)} UTC</span>
-        <span className={isLive ? "text-[var(--color-accent-hot)] font-semibold" : ""}>
-          {isLive ? "● LIVE" : new Date(endTs).toUTCString().slice(17, 22) + " UTC"}
+        <span className={`text-[10px] font-mono tabular-nums whitespace-nowrap shrink-0 ${isLive ? "text-[var(--color-accent-hot)] font-semibold" : "text-[var(--color-text-muted)]"}`}>
+          {isLive ? "● LIVE" : `${Math.round((endTs - displayedTs) / 60_000)} min ago`}
         </span>
+      </div>
+
+      <input
+        type="range"
+        min="0"
+        max="1000"
+        value={Math.round(sliderPct * 1000)}
+        aria-label="Time slider — drag to scrub through the past 24 hours of grid data"
+        onChange={(e) => {
+          const pct = Number(e.target.value) / 1000;
+          onChange(pct, pct >= 0.995);
+        }}
+        className="w-full h-1.5 rounded-full appearance-none bg-[rgba(255,255,255,0.1)] cursor-pointer
+                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
+                   [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-accent-hot)]
+                   [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-slide-bg)]
+                   [&::-webkit-slider-thumb]:shadow-[0_0_0_3px_rgba(255,107,53,0.25)]
+                   [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full
+                   [&::-moz-range-thumb]:bg-[var(--color-accent-hot)] [&::-moz-range-thumb]:border-2
+                   [&::-moz-range-thumb]:border-[var(--color-slide-bg)]"
+      />
+
+      <div className="flex justify-between text-[9px] font-mono text-[var(--color-text-muted)] tabular-nums mt-1">
+        <span>{new Date(startTs).toUTCString().slice(5, 22)} UTC</span>
+        <span>{new Date(endTs).toUTCString().slice(17, 22)} UTC</span>
       </div>
     </div>
   );
@@ -584,7 +582,7 @@ function DetailPanel({
   };
 
   return (
-    <div className="absolute top-3 left-3 bottom-16 w-[400px] max-w-[calc(100%-1.5rem)] rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(11,18,32,0.92)] backdrop-blur-md shadow-2xl shadow-black/50 z-30 flex flex-col overflow-hidden animate-in slide-in-from-left">
+    <div className="absolute top-3 left-3 bottom-[120px] w-[400px] max-w-[calc(100%-1.5rem)] rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(11,18,32,0.92)] backdrop-blur-md shadow-2xl shadow-black/50 z-30 flex flex-col overflow-hidden animate-in slide-in-from-left">
       <div className="px-5 pt-4 pb-3 border-b border-[var(--color-grid-stroke)]">
         <button
           onClick={onClose}
