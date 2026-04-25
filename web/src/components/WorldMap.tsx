@@ -782,7 +782,8 @@ function CIAreaChart({
   const areaPath = `${linePath} L ${xFor(tsMax).toFixed(1)} ${(P.t + innerH).toFixed(1)} L ${xFor(tsMin).toFixed(1)} ${(P.t + innerH).toFixed(1)} Z`;
 
   const cursorX = xFor(Math.max(tsMin, Math.min(tsMax, cursorTs)));
-  const idxAtCursor = Math.max(0, Math.min(n - 1, series.findIndex(s => s.ts >= cursorTs)));
+  const idxRaw = series.findIndex(s => s.ts >= cursorTs);
+  const idxAtCursor = idxRaw === -1 ? n - 1 : Math.max(0, Math.min(n - 1, idxRaw));
   const valAtCursor = series[idxAtCursor]?.ci ?? series[n - 1].ci;
 
   function handlePointer(e: React.PointerEvent<SVGSVGElement>) {
