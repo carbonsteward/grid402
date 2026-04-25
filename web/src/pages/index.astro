@@ -11,10 +11,14 @@ import WorldMap from "../components/WorldMap";
       Sub-hourly grid mix<br />
       <span class="text-[var(--color-accent-primary)]">priced by the call.</span>
     </h1>
-    <p class="mt-6 max-w-2xl text-lg text-[var(--color-text-muted)] leading-relaxed">
+    <p class="mt-5 max-w-2xl text-xl md:text-2xl font-semibold text-[var(--color-text-light)] leading-snug">
+      Time your agents. Route your GPU workloads.
+    </p>
+    <p class="mt-4 max-w-2xl text-lg text-[var(--color-text-muted)] leading-relaxed">
       Grid402 sells the world's electricity <strong class="text-[var(--color-text-light)]">5-minute generation mix</strong> and
-      its <strong class="text-[var(--color-text-light)]">carbon intensity</strong> as plain HTTP — every request settled in
-      USDC on Base. Spot price comes bundled. No API key. No subscription. No annual contract.
+      its <strong class="text-[var(--color-text-light)]">carbon intensity</strong> as plain HTTP — the input layer agents call before
+      deciding <em>when</em> to run their inference, <em>where</em> to route compute, and <em>which</em> 5-min interval is cleanest.
+      Every request settled in USDC on Base. Spot price comes bundled. No API key. No subscription. No annual contract.
     </p>
 
     <div class="mt-8 flex flex-wrap gap-3 text-sm">
@@ -74,8 +78,8 @@ import WorldMap from "../components/WorldMap";
         <p class="text-sm text-[var(--color-text-muted)]">A wallet signature replaces signups, dashboards, billing portals. Hit the endpoint, sign a 402 challenge, get JSON.</p>
       </div>
       <div class="rounded-lg border border-[var(--color-grid-stroke)] p-6">
-        <h3 class="font-semibold text-lg mb-2">One call, three signals</h3>
-        <p class="text-sm text-[var(--color-text-muted)]">Mix + price + emissions in a single HTTP round-trip via <code class="font-mono text-[var(--color-accent-primary)]">/combined</code> — the natural unit for an agent making a carbon-aware load-shift decision.</p>
+        <h3 class="font-semibold text-lg mb-2">Built for timing</h3>
+        <p class="text-sm text-[var(--color-text-muted)]">Agents call this aggregation to decide <em>when</em> their compute should run, <em>which region</em> to route GPU workloads to, and <em>which</em> 5-min interval is cleanest. We ship the input today; <code class="font-mono text-[var(--color-accent-primary)]">/combined</code> bundles mix + price + emissions in one round-trip. Decision endpoints (<code class="font-mono">/cleanest-window</code>, <code class="font-mono">/run-now</code>) ship in V2.</p>
       </div>
     </div>
   </section>
