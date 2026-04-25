@@ -21,17 +21,21 @@ const { title = "Grid402", description = "Pay-per-call electricity grid data —
   <meta name="twitter:card" content="summary_large_image" />
 </head>
 <body class="min-h-screen flex flex-col">
-  <header class="border-b border-[var(--color-grid-stroke)]">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-2 font-bold text-lg tracking-tight">
-        <span class="text-[var(--color-accent-hot)]">●</span>
-        <span>Grid402</span>
+  <header class="border-b border-[var(--color-grid-stroke)] bg-[var(--color-slide-bg-deep)]">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 group" aria-label="Grid402 home">
+        <img src="/brand/logomark.png" alt="" class="h-8 w-8 object-contain shrink-0" />
+        <span class="flex items-baseline gap-1.5 text-lg tracking-tight">
+          <span class="font-semibold text-[var(--color-off-white)]">Climatebrain</span>
+          <span class="text-[var(--color-text-muted)] font-light">/</span>
+          <span class="font-bold text-[var(--color-accent-primary)]">Grid402</span>
+        </span>
       </a>
       <nav class="flex items-center gap-6 text-sm">
-        <a href="/" class="hover:text-[var(--color-accent-mint)]">Live Map</a>
-        <a href="/docs" class="hover:text-[var(--color-accent-mint)]">Docs</a>
-        <a href="/docs/x402" class="hover:text-[var(--color-accent-mint)]">x402</a>
-        <a href="https://github.com/carbonsteward/grid402" class="hover:text-[var(--color-accent-mint)]" target="_blank" rel="noopener">GitHub</a>
+        <a href="/" class="text-[var(--color-text-light)] hover:text-[var(--color-accent-primary)] transition-colors">Live Map</a>
+        <a href="/docs" class="text-[var(--color-text-light)] hover:text-[var(--color-accent-primary)] transition-colors">Docs</a>
+        <a href="/docs/x402" class="text-[var(--color-text-light)] hover:text-[var(--color-accent-primary)] transition-colors">x402</a>
+        <a href="https://github.com/carbonsteward/grid402" class="text-[var(--color-text-light)] hover:text-[var(--color-accent-primary)] transition-colors" target="_blank" rel="noopener">GitHub</a>
       </nav>
     </div>
   </header>

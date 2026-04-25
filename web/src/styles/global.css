@@ -1,36 +1,60 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
-  --color-slide-bg: #0B1220;
-  --color-text-light: #F5F5F7;
-  --color-text-muted: #8FA3BE;
-  --color-accent-hot: #FF6B35;
-  --color-accent-warm: #FFB627;
-  --color-accent-mint: #4ECDC4;
-  --color-accent-red: #E63946;
-  --color-grid-stroke: rgba(143, 163, 190, 0.25);
+  /* ClimateBrain brand palette (v1.0, 2025) */
+  --color-mud-black: #1b1b30;
+  --color-energy-green: #00bcbc;
+  --color-off-white: #f0f0ec;
 
-  --font-sans: -apple-system, "SF Pro", Inter, Helvetica, Arial, sans-serif;
+  /* Aliases used throughout the app */
+  --color-slide-bg: #1b1b30;
+  --color-slide-bg-deep: #14142a;       /* 10% shade of mud black for deeper contrast */
+  --color-slide-bg-soft: #25253d;       /* tint for cards / panels */
+  --color-text-light: #f0f0ec;
+  --color-text-muted: #8a8aa8;          /* derived: warm muted on mud black */
+  --color-accent-primary: #00bcbc;       /* Energy Green */
+  --color-accent-light: #4ddede;         /* tint of teal */
+  --color-accent-deep: #008888;          /* shade of teal */
+  --color-accent-warm: #ffd066;          /* warm callout (mid-CI yellow) */
+  --color-accent-red: #ff5e5e;           /* error / dirty CI */
+  --color-grid-stroke: rgba(143, 143, 168, 0.22);
+
+  /* Backwards-compat aliases (still referenced in some components) */
+  --color-accent-mint: #00bcbc;
+  --color-accent-hot: #00bcbc;
+
+  --font-sans: "Matter", "Inter", "SF Pro Display", -apple-system, system-ui, Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
 }
 
 html, body {
-  background: var(--color-slide-bg);
+  background: var(--color-mud-black);
   color: var(--color-text-light);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Carbon-intensity gradient stops (gCO2eq/kWh) — used by the map */
-.ci-clean    { fill: #4ECDC4; }   /* < 100  */
-.ci-low      { fill: #7FD9A0; }   /* 100-200 */
-.ci-mid      { fill: #FFB627; }   /* 200-400 */
-.ci-high     { fill: #FF6B35; }   /* 400-600 */
-.ci-dirty    { fill: #E63946; }   /* > 600  */
-.ci-unknown  { fill: rgba(143, 163, 190, 0.18); }
+/* Carbon-intensity gradient stops (gCO2eq/kWh) — ClimateBrain palette
+   re-tuned: clean uses Energy Green, dirty uses warm earth browns. */
+.ci-clean    { fill: #00bcbc; }   /* < 100  */
+.ci-low      { fill: #4ddede; }   /* 100-200 */
+.ci-mid      { fill: #ffd066; }   /* 200-400 */
+.ci-high     { fill: #d97755; }   /* 400-600 */
+.ci-dirty    { fill: #b54a4a; }   /* > 600  */
+.ci-unknown  { fill: rgba(143, 143, 168, 0.18); }
 
 @keyframes pulse-pin {
   0%, 100% { transform: scale(1); opacity: 1; }
   50%      { transform: scale(1.15); opacity: 0.7; }
 }
 .pin-live { animation: pulse-pin 2.4s ease-in-out infinite; transform-origin: center; }
+
+@keyframes slide-in-from-left {
+  from { transform: translateX(-110%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+.animate-in.slide-in-from-left {
+  animation: slide-in-from-left 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}

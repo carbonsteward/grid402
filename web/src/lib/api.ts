@@ -39,6 +39,33 @@ async function fetchJSON<T>(path: string, signal?: AbortSignal): Promise<T> {
   return (await res.json()) as T;
 }
 
+export type HistoricalSeries = {
+  iso: ISO;
+  zone?: string;
+  source: "live" | "estimate";
+  step_minutes: number;
+  source_url?: string;
+  series: Array<{
+    ts: string;
+    ci_g_per_kwh: number;
+    generation_mw: Record<string, number>;
+    pct: Record<string, number>;
+  }>;
+};
+
+export async function getHistory(iso: ISO, opts?: { hours?: number; step?: number; signal?: AbortSignal; timeoutMs?: number }): Promise<HistoricalSeries> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), opts?.timeoutMs ?? 12000);
+  const params = new URLSearchParams();
+  if (opts?.hours) params.set("hours", String(opts.hours));
+  if (opts?.step) params.set("step", String(opts.step));
+  try {
+    return await fetchJSON<HistoricalSeries>(`/mix/${iso}/history${params.toString() ? `?${params}` : ""}`, opts?.signal ?? ctrl.signal);
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 export async function getMix(iso: ISO, opts?: { timeoutMs?: number; signal?: AbortSignal }): Promise<MixSnapshot> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS);

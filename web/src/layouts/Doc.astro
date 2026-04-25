@@ -1,12 +1,198 @@
 ---
 import Layout from "./Layout.astro";
 const { frontmatter } = Astro.props;
+
+const docNav = [
+  { slug: "quickstart", title: "Quickstart" },
+  { slug: "endpoints",  title: "Endpoints" },
+  { slug: "x402",       title: "x402 protocol" },
+  { slug: "isos",       title: "ISO coverage" },
+];
+
+const currentPath = Astro.url.pathname.replace(/\/$/, "");
 ---
 <Layout title={`${frontmatter?.title ?? "Doc"} · Grid402`} description={frontmatter?.description}>
-  <article class="max-w-3xl mx-auto px-6 py-16 prose prose-invert prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-2xl prose-h2:mt-12 prose-h3:text-xl prose-a:text-[var(--color-accent-mint)] prose-code:text-[var(--color-accent-warm)] prose-code:before:content-[''] prose-code:after:content-[''] prose-code:bg-[rgba(255,255,255,0.05)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-[rgba(0,0,0,0.4)] prose-pre:border prose-pre:border-[var(--color-grid-stroke)]">
-    <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-accent-mint)] font-semibold mb-3 not-prose">
-      <a href="/docs" class="hover:text-[var(--color-accent-warm)]">← Docs</a>
-    </p>
-    <slot />
-  </article>
+  <div class="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-[220px_1fr] gap-10">
+    <!-- Sidebar nav -->
+    <aside class="lg:sticky lg:top-6 lg:h-fit">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-mint)] font-semibold mb-3">
+        Documentation
+      </p>
+      <nav class="flex flex-col gap-1">
+        {docNav.map(d => {
+          const href = `/docs/${d.slug}`;
+          const active = currentPath === href || currentPath === `${href}/`;
+          return (
+            <a
+              href={href}
+              class={[
+                "px-3 py-2 rounded-md text-sm transition-colors",
+                active
+                  ? "bg-[rgba(255,107,53,0.12)] text-[var(--color-accent-hot)] font-semibold"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-light)] hover:bg-[rgba(255,255,255,0.04)]"
+              ].join(" ")}
+            >
+              {d.title}
+            </a>
+          );
+        })}
+      </nav>
+      <div class="mt-6 pt-6 border-t border-[var(--color-grid-stroke)]">
+        <a href="/" class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-accent-mint)]">
+          ← Back to live map
+        </a>
+      </div>
+    </aside>
+
+    <!-- Article -->
+    <article class="doc-content min-w-0">
+      <slot />
+    </article>
+  </div>
 </Layout>
+
+<style is:global>
+  .doc-content {
+    color: var(--color-text-light);
+    font-size: 15px;
+    line-height: 1.65;
+    max-width: 760px;
+  }
+  .doc-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem 0;
+    line-height: 1.15;
+  }
+  .doc-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 2.5rem 0 1rem 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-grid-stroke);
+  }
+  .doc-content h2:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 2rem;
+  }
+  .doc-content h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 1.75rem 0 0.5rem 0;
+  }
+  .doc-content p {
+    margin: 0 0 1rem 0;
+    color: var(--color-text-light);
+  }
+  .doc-content p > code,
+  .doc-content li > code,
+  .doc-content td > code,
+  .doc-content h2 > code,
+  .doc-content h3 > code {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-accent-warm);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.875em;
+    font-family: var(--font-mono);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .doc-content a {
+    color: var(--color-accent-mint);
+    text-decoration: underline;
+    text-decoration-color: rgba(78, 205, 196, 0.4);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 150ms;
+  }
+  .doc-content a:hover {
+    text-decoration-color: var(--color-accent-mint);
+  }
+  .doc-content ul, .doc-content ol {
+    margin: 0 0 1.25rem 0;
+    padding-left: 1.5rem;
+  }
+  .doc-content li {
+    margin: 0.35rem 0;
+  }
+  .doc-content li::marker {
+    color: var(--color-text-muted);
+  }
+  .doc-content pre {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--color-grid-stroke);
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+    margin: 1.25rem 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .doc-content pre code {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: var(--color-text-light);
+    font-family: var(--font-mono);
+  }
+  .doc-content blockquote {
+    border-left: 3px solid var(--color-accent-mint);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--color-text-muted);
+    font-style: normal;
+  }
+  .doc-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 13px;
+    overflow-x: auto;
+    display: block;
+  }
+  @media (min-width: 768px) {
+    .doc-content table {
+      display: table;
+    }
+  }
+  .doc-content thead {
+    background: rgba(255, 255, 255, 0.025);
+  }
+  .doc-content th {
+    text-align: left;
+    padding: 0.7rem 1rem;
+    font-weight: 600;
+    color: var(--color-text-light);
+    border-bottom: 1px solid var(--color-grid-stroke);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+  }
+  .doc-content td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid rgba(143, 163, 190, 0.1);
+    vertical-align: top;
+  }
+  .doc-content tr:hover td {
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .doc-content tr:last-child td {
+    border-bottom: 0;
+  }
+  .doc-content hr {
+    border: 0;
+    border-top: 1px solid var(--color-grid-stroke);
+    margin: 2rem 0;
+  }
+  .doc-content strong {
+    color: var(--color-text-light);
+    font-weight: 700;
+  }
+  .doc-content em {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+</style>
