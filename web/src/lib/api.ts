@@ -5,7 +5,9 @@
 
 export const API_BASE =
   (typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_GRID402_API) ||
-  "http://localhost:3402";
+  (typeof window !== "undefined" && window.location.origin.includes("localhost")
+    ? "http://localhost:3402"
+    : "/api");
 
 export type ISO = "CAISO" | "ERCOT" | "AEMO" | "KPX";
 
