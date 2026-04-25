@@ -45,3 +45,4 @@ coverage/
 *.local.md
 demo-evidence/
 .context/
+_internal/
