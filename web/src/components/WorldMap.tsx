@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { geoNaturalEarth1, geoPath } from "d3-geo";
+import { useEffect, useMemo, useRef, useState } from "react";
+import maplibregl, { type Map as MLMap } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { feature } from "topojson-client";
-import type { FeatureCollection, Geometry } from "geojson";
+import type { FeatureCollection, Geometry, Feature } from "geojson";
 import { getMix, type ISO, type MixSnapshot } from "../lib/api";
 
 // Country numeric ISO 3166-1 IDs → ISO operator(s) covering them.
@@ -13,26 +14,27 @@ const COUNTRY_TO_ISO: Record<string, Array<{ iso: ISO; weight: number; label?: s
   "826": [{ iso: "GB" as ISO, weight: 1, label: "Great Britain (NESO)" }],
 };
 
-// Carbon-intensity color scale (matches Electricity Maps warm-earth gradient,
-// adapted for dark background). Lower = clean (green), higher = dirty (brown).
+const ISOS_TO_FETCH: ISO[] = ["CAISO", "ERCOT", "AEMO", "KPX", "GB" as ISO];
+
+// CI gradient stops (gCO2/kWh → RGB). Matches Electricity Maps' warm-earth scale.
+const CI_STOPS: Array<[number, [number, number, number]]> = [
+  [0,    [78, 205, 196]],
+  [100,  [127, 217, 160]],
+  [200,  [223, 194, 94]],
+  [400,  [200, 130, 60]],
+  [600,  [148, 84, 50]],
+  [900,  [101, 56, 35]],
+  [1500, [60, 35, 25]],
+];
+
 function ciColor(g: number | undefined | null): string {
   if (g == null || Number.isNaN(g)) return "rgba(143, 163, 190, 0.18)";
-  // Stops: 0 / 100 / 200 / 400 / 600 / 900 / 1500
-  const stops: Array<[number, [number, number, number]]> = [
-    [0,    [78, 205, 196]],   // mint
-    [100,  [127, 217, 160]],  // light green
-    [200,  [223, 194, 94]],   // yellow
-    [400,  [200, 130, 60]],   // amber-brown
-    [600,  [148, 84, 50]],    // brown
-    [900,  [101, 56, 35]],    // dark brown
-    [1500, [60, 35, 25]],     // very dark
-  ];
-  let lo = stops[0], hi = stops[stops.length - 1];
-  for (let i = 0; i < stops.length - 1; i++) {
-    if (g >= stops[i][0] && g <= stops[i + 1][0]) { lo = stops[i]; hi = stops[i + 1]; break; }
+  let lo = CI_STOPS[0], hi = CI_STOPS[CI_STOPS.length - 1];
+  for (let i = 0; i < CI_STOPS.length - 1; i++) {
+    if (g >= CI_STOPS[i][0] && g <= CI_STOPS[i + 1][0]) { lo = CI_STOPS[i]; hi = CI_STOPS[i + 1]; break; }
   }
-  if (g <= stops[0][0]) return `rgb(${stops[0][1].join(",")})`;
-  if (g >= stops[stops.length - 1][0]) return `rgb(${stops[stops.length - 1][1].join(",")})`;
+  if (g <= CI_STOPS[0][0]) return `rgb(${CI_STOPS[0][1].join(",")})`;
+  if (g >= CI_STOPS[CI_STOPS.length - 1][0]) return `rgb(${CI_STOPS[CI_STOPS.length - 1][1].join(",")})`;
   const t = (g - lo[0]) / (hi[0] - lo[0]);
   const r = Math.round(lo[1][0] + (hi[1][0] - lo[1][0]) * t);
   const gg = Math.round(lo[1][1] + (hi[1][1] - lo[1][1]) * t);
@@ -40,18 +42,19 @@ function ciColor(g: number | undefined | null): string {
   return `rgb(${r},${gg},${b})`;
 }
 
-const ISOS_TO_FETCH: ISO[] = ["CAISO", "ERCOT", "AEMO", "KPX", "GB" as ISO];
-
 type FC = FeatureCollection<Geometry, { name?: string }>;
 
 export default function WorldMap() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<MLMap | null>(null);
   const [topo, setTopo] = useState<FC | null>(null);
   const [data, setData] = useState<Partial<Record<ISO, MixSnapshot>>>({});
   const [errs, setErrs] = useState<Partial<Record<ISO, string>>>({});
-  const [selected, setSelected] = useState<string | null>("840"); // default: USA
+  const [selected, setSelected] = useState<string | null>("840");
   const [lastUpdate, setLastUpdate] = useState<number | null>(null);
+  const [styleReady, setStyleReady] = useState(false);
 
-  // Load TopoJSON once
+  // Load TopoJSON
   useEffect(() => {
     let cancelled = false;
     fetch("/data/countries-110m.json")
@@ -59,7 +62,12 @@ export default function WorldMap() {
       .then((t: any) => {
         if (cancelled) return;
         const fc = feature(t, t.objects.countries) as unknown as FC;
-        setTopo(fc);
+        // Promote `id` to a property so MapLibre's expressions can read it.
+        const features: Feature[] = fc.features.map(f => ({
+          ...f,
+          properties: { ...(f.properties ?? {}), iso_n3: String(f.id ?? "") },
+        }));
+        setTopo({ type: "FeatureCollection", features } as FC);
       });
     return () => { cancelled = true; };
   }, []);
@@ -86,86 +94,173 @@ export default function WorldMap() {
     return () => { cancelled = true; clearInterval(id); };
   }, []);
 
-  // Country ID → blended CI
-  function ciFor(countryId: string): number | undefined {
-    const mapping = COUNTRY_TO_ISO[countryId];
-    if (!mapping) return undefined;
-    let sum = 0, w = 0;
-    for (const { iso, weight } of mapping) {
-      const snap = data[iso];
-      if (snap) { sum += snap.ci_g_per_kwh * weight; w += weight; }
-    }
-    return w > 0 ? sum / w : undefined;
-  }
+  // Initialize MapLibre once
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+    const map = new maplibregl.Map({
+      container: containerRef.current,
+      style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+      center: [10, 30],
+      zoom: 1.6,
+      minZoom: 1.2,
+      maxZoom: 7,
+      attributionControl: { compact: true },
+      renderWorldCopies: false,
+      dragRotate: false,
+      pitchWithRotate: false,
+    });
+    map.scrollZoom.disable(); // re-enable on click; prevents accidental zoom while scrolling page
+    map.on("click", () => map.scrollZoom.enable());
+    map.touchZoomRotate.disableRotation();
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.on("load", () => setStyleReady(true));
+    mapRef.current = map;
 
-  // Default selection: USA. If user picks another, show that.
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  // Add the choropleth source/layer once both topo + style are ready
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !topo || !styleReady) return;
+    if (map.getSource("countries")) return;
+
+    map.addSource("countries", {
+      type: "geojson",
+      data: topo as any,
+      promoteId: "iso_n3",
+    });
+
+    // Choropleth fill — color set per-feature via setFeatureState
+    map.addLayer({
+      id: "countries-fill",
+      type: "fill",
+      source: "countries",
+      paint: {
+        "fill-color": [
+          "case",
+          ["==", ["coalesce", ["feature-state", "covered"], false], true],
+          ["coalesce", ["feature-state", "color"], "rgba(143, 163, 190, 0.18)"],
+          "rgba(143, 163, 190, 0.04)",
+        ],
+        "fill-opacity": [
+          "case",
+          ["==", ["coalesce", ["feature-state", "covered"], false], true], 0.85,
+          0.4,
+        ],
+      },
+    });
+
+    map.addLayer({
+      id: "countries-stroke",
+      type: "line",
+      source: "countries",
+      paint: {
+        "line-color": [
+          "case",
+          ["==", ["coalesce", ["feature-state", "selected"], false], true], "#F5F5F7",
+          ["==", ["coalesce", ["feature-state", "covered"], false], true], "rgba(245,245,247,0.45)",
+          "rgba(143,163,190,0.18)",
+        ],
+        "line-width": [
+          "case",
+          ["==", ["coalesce", ["feature-state", "selected"], false], true], 2,
+          0.5,
+        ],
+      },
+    });
+
+    map.on("click", "countries-fill", (e) => {
+      const id = e.features?.[0]?.id as string | undefined;
+      if (id && id in COUNTRY_TO_ISO) setSelected(id);
+    });
+
+    map.on("mousemove", "countries-fill", (e) => {
+      const id = e.features?.[0]?.id as string | undefined;
+      map.getCanvas().style.cursor = id && id in COUNTRY_TO_ISO ? "pointer" : "";
+    });
+    map.on("mouseleave", "countries-fill", () => { map.getCanvas().style.cursor = ""; });
+  }, [topo, styleReady]);
+
+  // Update feature-states whenever data changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !topo || !styleReady) return;
+    if (!map.getSource("countries")) return;
+
+    function ciFor(countryId: string): number | undefined {
+      const mapping = COUNTRY_TO_ISO[countryId];
+      if (!mapping) return undefined;
+      let sum = 0, w = 0;
+      for (const { iso, weight } of mapping) {
+        const snap = data[iso];
+        if (snap) { sum += snap.ci_g_per_kwh * weight; w += weight; }
+      }
+      return w > 0 ? sum / w : undefined;
+    }
+
+    for (const f of topo.features) {
+      const id = String(f.id ?? "");
+      if (!id) continue;
+      const covered = id in COUNTRY_TO_ISO;
+      const ci = ciFor(id);
+      map.setFeatureState(
+        { source: "countries", id },
+        {
+          covered,
+          color: covered ? ciColor(ci) : "rgba(143, 163, 190, 0.04)",
+          selected: id === selected,
+        },
+      );
+    }
+  }, [data, topo, styleReady, selected]);
+
+  // Toggle "selected" feature-state on selection change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !topo || !styleReady) return;
+    for (const f of topo.features) {
+      const id = String(f.id ?? "");
+      if (!id) continue;
+      map.setFeatureState({ source: "countries", id }, { selected: id === selected });
+    }
+  }, [selected, topo, styleReady]);
+
   const selectedMapping = selected ? COUNTRY_TO_ISO[selected] : undefined;
   const selectedCountryName = selected && topo
-    ? (topo.features.find(f => String(f.id) === selected)?.properties?.name)
+    ? topo.features.find(f => String(f.id) === selected)?.properties?.name
     : undefined;
-
-  const path = useMemo(() => {
-    const proj = geoNaturalEarth1().scale(195).translate([500, 320]);
-    return geoPath(proj);
-  }, []);
 
   return (
     <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
       {/* Map */}
-      <div className="relative rounded-xl overflow-hidden bg-[rgba(11,18,32,0.7)] border border-[var(--color-grid-stroke)]">
-        <svg viewBox="0 0 1000 560" className="w-full h-auto block" role="img" aria-label="Global grid carbon intensity">
-          <defs>
-            <radialGradient id="ocean" cx="50%" cy="50%" r="80%">
-              <stop offset="0%" stopColor="#0F1A2E" />
-              <stop offset="100%" stopColor="#070C18" />
-            </radialGradient>
-          </defs>
-          <rect x="0" y="0" width="1000" height="560" fill="url(#ocean)" />
-          {topo?.features.map(f => {
-            const id = String(f.id);
-            const ci = ciFor(id);
-            const isCovered = id in COUNTRY_TO_ISO;
-            const isSelected = id === selected;
-            const d = path(f as any);
-            if (!d) return null;
-            return (
-              <path
-                key={id}
-                d={d}
-                fill={isCovered ? ciColor(ci) : "rgba(143, 163, 190, 0.08)"}
-                stroke={isSelected ? "#F5F5F7" : isCovered ? "rgba(245,245,247,0.4)" : "rgba(143,163,190,0.2)"}
-                strokeWidth={isSelected ? 1.5 : 0.5}
-                style={{ cursor: isCovered ? "pointer" : "default", transition: "fill 240ms" }}
-                onClick={() => isCovered && setSelected(id)}
-              >
-                <title>
-                  {f.properties?.name}{isCovered ? ` — ${Math.round(ci ?? 0)} gCO₂/kWh` : ""}
-                </title>
-              </path>
-            );
-          })}
-        </svg>
+      <div className="relative rounded-xl overflow-hidden bg-[#0B1220] border border-[var(--color-grid-stroke)]">
+        <div ref={containerRef} className="h-[560px] w-full" />
 
         {/* Live indicator */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 rounded-full bg-[rgba(11,18,32,0.85)] backdrop-blur px-3 py-1.5 border border-[var(--color-grid-stroke)]">
+        <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full bg-[rgba(11,18,32,0.85)] backdrop-blur px-3 py-1.5 border border-[var(--color-grid-stroke)] z-10">
           <span className="relative inline-flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-hot)] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-accent-hot)]"></span>
           </span>
-          <span className="text-xs font-mono">{lastUpdate ? new Date(lastUpdate).toUTCString().slice(17, 22) : "--:--"} UTC</span>
+          <span className="text-xs font-mono text-[var(--color-text-light)]">
+            {lastUpdate ? new Date(lastUpdate).toUTCString().slice(17, 22) : "--:--"} UTC
+          </span>
         </div>
 
         {/* CI legend */}
-        <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-lg bg-[rgba(11,18,32,0.85)] backdrop-blur px-4 py-2 border border-[var(--color-grid-stroke)]">
-          <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">Carbon intensity</span>
+        <div className="absolute bottom-3 left-3 right-3 md:right-auto md:max-w-[60%] flex items-center gap-3 rounded-lg bg-[rgba(11,18,32,0.85)] backdrop-blur px-4 py-2 border border-[var(--color-grid-stroke)] z-10">
+          <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Carbon intensity</span>
           <div
-            className="flex-1 h-2 rounded"
+            className="flex-1 h-2 rounded min-w-[120px]"
             style={{
-              background: `linear-gradient(to right, ${[0, 100, 200, 400, 600, 900, 1500].map(g => ciColor(g)).join(", ")})`,
+              background: `linear-gradient(to right, ${CI_STOPS.map(([g]) => ciColor(g)).join(", ")})`,
             }}
           />
-          <span className="text-[11px] font-mono text-[var(--color-text-muted)]">0</span>
-          <span className="text-[11px] font-mono text-[var(--color-text-muted)]">1500 gCO₂/kWh</span>
+          <span className="text-[10px] font-mono text-[var(--color-text-muted)] whitespace-nowrap">0–1500 gCO₂/kWh</span>
         </div>
       </div>
 
@@ -198,7 +293,6 @@ function DetailPanel({
     );
   }
 
-  // Aggregate mix when multiple ISOs cover this country
   const aggregateMix: Record<string, number> = {};
   let aggregateCI = 0;
   let weightSum = 0;
@@ -246,9 +340,8 @@ function DetailPanel({
         {mapping.map(m => m.label ?? m.iso).join(" · ")}
       </p>
 
-      {/* Big stats */}
       <div className="grid grid-cols-3 gap-2 mb-6">
-        <div className="rounded-lg p-3" style={{ backgroundColor: ci != null ? hexA(ciColor(ci), 0.15) : "rgba(255,255,255,0.05)" }}>
+        <div className="rounded-lg p-3" style={{ backgroundColor: ci != null ? rgbA(ciColor(ci), 0.15) : "rgba(255,255,255,0.05)" }}>
           <div className="text-2xl font-bold tabular-nums">{ci != null ? Math.round(ci) : "—"}</div>
           <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mt-0.5">gCO₂eq/kWh</div>
           <div className="text-[10px] text-[var(--color-text-muted)] mt-1">Carbon intensity</div>
@@ -295,8 +388,7 @@ function DetailPanel({
   );
 }
 
-// rgb(...) → rgba(... , a)
-function hexA(rgb: string, a: number): string {
+function rgbA(rgb: string, a: number): string {
   const m = rgb.match(/rgb\(([^)]+)\)/);
   if (!m) return rgb;
   return `rgba(${m[1]}, ${a})`;
