@@ -1,0 +1,48 @@
+---
+import "../styles/global.css";
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title = "Grid402", description = "Pay-per-call electricity grid data — sub-hourly mix, prices, emissions. Settled in USDC on Base via x402." } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="generator" content={Astro.generator} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content="https://grid402.climatebrain.xyz" />
+  <meta name="twitter:card" content="summary_large_image" />
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="border-b border-[var(--color-grid-stroke)]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 font-bold text-lg tracking-tight">
+        <span class="text-[var(--color-accent-hot)]">●</span>
+        <span>Grid402</span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/" class="hover:text-[var(--color-accent-mint)]">Live Map</a>
+        <a href="/docs" class="hover:text-[var(--color-accent-mint)]">Docs</a>
+        <a href="/docs/x402" class="hover:text-[var(--color-accent-mint)]">x402</a>
+        <a href="https://github.com/carbonsteward/grid402" class="hover:text-[var(--color-accent-mint)]" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+  <main class="flex-1">
+    <slot />
+  </main>
+  <footer class="border-t border-[var(--color-grid-stroke)] mt-16">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+      <span>© 2026 Grid402 · carbonsteward</span>
+      <span>USDC on Base · x402 micropayments</span>
+    </div>
+  </footer>
+</body>
+</html>

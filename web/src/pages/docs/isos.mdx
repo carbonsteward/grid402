@@ -1,0 +1,52 @@
+---
+layout: ../../layouts/Doc.astro
+title: ISO coverage
+description: CAISO, ERCOT, KPX, AEMO — granularity, freshness, source URLs.
+---
+
+# ISO coverage
+
+Grid402 connects directly to each ISO's published feed — no aggregation layer,
+no third-party reseller. Update cadence and freshness vary; this page tracks
+each one.
+
+## CAISO — California ISO
+
+- **Source:** OASIS reports + Today's Outlook (`caiso.com`)
+- **Mix granularity:** 5 minutes
+- **Spot price:** real-time LMP at TH_NP15, TH_SP15, TH_ZP26
+- **Freshness:** ~3 minutes behind real-time
+- **Notes:** CAISO publishes a live carbon-intensity overlay (CISO_CO2 series)
+  that we cross-reference against our IPCC-factor calculation.
+
+## ERCOT — Texas
+
+- **Source:** ERCOT public data feeds + 60-day disclosures
+- **Mix granularity:** 5 minutes (fuel mix), 15 minutes (settlement)
+- **Spot price:** real-time SPP at HB_BUSAVG, HB_HOUSTON, HB_NORTH, HB_WEST, HB_SOUTH
+- **Freshness:** ~5 minutes behind real-time
+- **Notes:** Wind dominates; mix swings 60+ percentage points day-to-day.
+
+## KPX — Korea Power Exchange
+
+- **Source:** data.go.kr proxy (organization B552115) — datasets 15113384 (mix) + 15131225 (SMP)
+- **Mix granularity:** 60 minutes (v2 API), 5 minutes (v1 XML fallback)
+- **Spot price:** SMP (System Marginal Price) hourly
+- **Freshness:** 30–60 minutes behind real-time
+- **Notes:** KRW→USD conversion uses live ECB reference rate; raw KRW price
+  preserved in `price_krw_per_mwh`.
+
+## AEMO — Australian Energy Market Operator (NEM)
+
+- **Source:** AEMO Data Dashboard CSV feeds
+- **Mix granularity:** 5 minutes (DUID-level dispatch)
+- **Spot price:** RRP at NSW1, QLD1, SA1, TAS1, VIC1
+- **Freshness:** ~5 minutes behind real-time
+- **Notes:** WEM (Western Australia) not yet covered — different dispatch system.
+
+## Coming soon
+
+- **GB Carbon Intensity API** — Great Britain (no auth required, freely available)
+- **ENTSO-E** — 27 EU countries (one token unlocks all)
+- **NYISO** — New York (CSV feeds)
+- **PJM** — Mid-Atlantic / Midwest USA

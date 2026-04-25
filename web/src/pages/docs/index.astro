@@ -1,0 +1,28 @@
+---
+import Layout from "../../layouts/Layout.astro";
+const docs = [
+  { slug: "quickstart", title: "Quickstart", desc: "Make your first paid call in 60 seconds." },
+  { slug: "endpoints",  title: "Endpoints",  desc: "All routes — spot, mix, emissions, combined." },
+  { slug: "x402",       title: "x402 protocol", desc: "How HTTP 402 + USDC on Base settles each call." },
+  { slug: "isos",       title: "ISO coverage", desc: "CAISO, ERCOT, KPX, AEMO — granularity & freshness." },
+];
+---
+<Layout title="Docs · Grid402">
+  <section class="max-w-4xl mx-auto px-6 py-16">
+    <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-accent-mint)] font-semibold mb-3">Documentation</p>
+    <h1 class="text-4xl font-bold mb-6">Build with Grid402</h1>
+    <p class="text-[var(--color-text-muted)] mb-10 max-w-2xl">
+      Grid402 is an HTTP API. Every request to a paid endpoint returns
+      <code class="font-mono text-[var(--color-accent-warm)]">402 Payment Required</code> until you attach a signed
+      x402 payload. Free routes (health, schema) work without payment.
+    </p>
+    <div class="grid md:grid-cols-2 gap-3">
+      {docs.map(d => (
+        <a href={`/docs/${d.slug}`} class="block rounded-lg border border-[var(--color-grid-stroke)] p-5 hover:border-[var(--color-accent-mint)] transition-colors">
+          <h2 class="font-semibold text-lg mb-1">{d.title}</h2>
+          <p class="text-sm text-[var(--color-text-muted)]">{d.desc}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</Layout>

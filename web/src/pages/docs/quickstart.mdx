@@ -1,0 +1,67 @@
+---
+layout: ../../layouts/Doc.astro
+title: Quickstart
+description: Make your first paid Grid402 call in under 60 seconds.
+---
+
+# Quickstart
+
+Grid402 endpoints return `402 Payment Required` with an x402 challenge until
+you attach a signed payload. The challenge says how much USDC the call costs
+and which network to settle on (Base mainnet or Base Sepolia for testing).
+
+## 1. Try it without paying
+
+Free probe — no wallet needed:
+
+```bash
+curl https://grid402.climatebrain.xyz/api/mix/CAISO/live
+# => 402 Payment Required
+# => { "x402Version": 1, "accepts": [ ... ], "error": "Payment required" }
+```
+
+You'll see the cost, the recipient address, and the network in the `accepts` array.
+
+## 2. Pay with the x402 fetch helper
+
+Install the official client:
+
+```bash
+pnpm add x402-fetch
+```
+
+Then make the call:
+
+```ts
+import { wrapFetchWithPayment } from "x402-fetch";
+import { createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { base } from "viem/chains";
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+const client = createWalletClient({ account, chain: base, transport: http() });
+
+const fetch402 = wrapFetchWithPayment(fetch, client);
+
+const res = await fetch402("https://grid402.climatebrain.xyz/api/mix/CAISO/live");
+const data = await res.json();
+console.log(data.ci_g_per_kwh, data.pct);
+```
+
+That's it — the client handles the 402 challenge, signs the USDC transfer
+authorization, retries with `X-PAYMENT` header, and gives you back the JSON.
+
+## 3. What you get
+
+```json
+{
+  "iso": "CAISO",
+  "ts": "2026-04-25T20:55:00Z",
+  "generation_mw": { "solar": 8421, "wind": 2310, "gas": 4115, "nuclear": 2240 },
+  "pct": { "solar": 38.4, "wind": 10.5, "gas": 18.7, "nuclear": 10.2 },
+  "ci_g_per_kwh": 184,
+  "source_url": "https://www.caiso.com/..."
+}
+```
+
+Cost per call: **$0.002 USDC** (subject to change in v1).

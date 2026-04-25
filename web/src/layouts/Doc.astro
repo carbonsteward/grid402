@@ -1,0 +1,12 @@
+---
+import Layout from "./Layout.astro";
+const { frontmatter } = Astro.props;
+---
+<Layout title={`${frontmatter?.title ?? "Doc"} · Grid402`} description={frontmatter?.description}>
+  <article class="max-w-3xl mx-auto px-6 py-16 prose prose-invert prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-2xl prose-h2:mt-12 prose-h3:text-xl prose-a:text-[var(--color-accent-mint)] prose-code:text-[var(--color-accent-warm)] prose-code:before:content-[''] prose-code:after:content-[''] prose-code:bg-[rgba(255,255,255,0.05)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-[rgba(0,0,0,0.4)] prose-pre:border prose-pre:border-[var(--color-grid-stroke)]">
+    <p class="text-xs uppercase tracking-[0.2em] text-[var(--color-accent-mint)] font-semibold mb-3 not-prose">
+      <a href="/docs" class="hover:text-[var(--color-accent-warm)]">← Docs</a>
+    </p>
+    <slot />
+  </article>
+</Layout>

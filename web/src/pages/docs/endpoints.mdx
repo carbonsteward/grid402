@@ -1,0 +1,57 @@
+---
+layout: ../../layouts/Doc.astro
+title: Endpoints
+description: Every Grid402 route — spot, mix, emissions, combined.
+---
+
+# Endpoints
+
+Base URL: `https://grid402.climatebrain.xyz/api`
+
+All routes return JSON. Paid routes return `402` until x402-signed.
+
+## Mix (generation breakdown + carbon intensity)
+
+| Route | ISO | Granularity | Cost |
+|---|---|---|---|
+| `GET /mix/CAISO/live` | California, USA | 5 min | $0.002 |
+| `GET /mix/ERCOT/live` | Texas, USA | 5 min | $0.002 |
+| `GET /mix/KPX/live`   | Korea | 5–60 min | $0.003 |
+| `GET /mix/AEMO/:region/live` | Australia (NEM) | 5 min | $0.002 |
+
+`:region` for AEMO is one of `NSW1`, `QLD1`, `SA1`, `TAS1`, `VIC1`.
+
+## Spot price
+
+| Route | Currency | Granularity |
+|---|---|---|
+| `GET /spot/CAISO/:zone/live` | USD/MWh | 5–15 min |
+| `GET /spot/ERCOT/:hub/live` | USD/MWh | 5–15 min |
+| `GET /spot/KPX/:zone/live`   | KRW/MWh + USD conversion | hourly SMP |
+| `GET /spot/AEMO/:region/live` | AUD/MWh + USD conversion | 5 min RRP |
+
+## Emissions (gCO₂eq per kWh)
+
+| Route | Method |
+|---|---|
+| `GET /emissions/CAISO/live` | computed from mix × IPCC AR6 fuel factors |
+| `GET /emissions/ERCOT/live` | same |
+| `GET /emissions/KPX/live`   | same |
+| `GET /emissions/AEMO/:region/live` | same |
+
+## Combined (one call → mix + spot + emissions)
+
+| Route | Cost |
+|---|---|
+| `GET /combined/CAISO/:zone/live` | $0.005 |
+| `GET /combined/ERCOT/:hub/live` | $0.005 |
+| `GET /combined/KPX/:zone/live`   | $0.006 |
+| `GET /combined/AEMO/:region/live` | $0.005 |
+
+Combined is cheaper than three separate calls. Use it for dashboards.
+
+## Free routes (no payment)
+
+- `GET /` — service info + version
+- `GET /health` — `{ ok: true, ts }`
+- `GET /schema/:iso` — JSON schema for that ISO's responses

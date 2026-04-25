@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-slide-bg: #0B1220;
+  --color-text-light: #F5F5F7;
+  --color-text-muted: #8FA3BE;
+  --color-accent-hot: #FF6B35;
+  --color-accent-warm: #FFB627;
+  --color-accent-mint: #4ECDC4;
+  --color-accent-red: #E63946;
+  --color-grid-stroke: rgba(143, 163, 190, 0.25);
+
+  --font-sans: -apple-system, "SF Pro", Inter, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+
+html, body {
+  background: var(--color-slide-bg);
+  color: var(--color-text-light);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Carbon-intensity gradient stops (gCO2eq/kWh) — used by the map */
+.ci-clean    { fill: #4ECDC4; }   /* < 100  */
+.ci-low      { fill: #7FD9A0; }   /* 100-200 */
+.ci-mid      { fill: #FFB627; }   /* 200-400 */
+.ci-high     { fill: #FF6B35; }   /* 400-600 */
+.ci-dirty    { fill: #E63946; }   /* > 600  */
+.ci-unknown  { fill: rgba(143, 163, 190, 0.18); }
+
+@keyframes pulse-pin {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.15); opacity: 0.7; }
+}
+.pin-live { animation: pulse-pin 2.4s ease-in-out infinite; transform-origin: center; }

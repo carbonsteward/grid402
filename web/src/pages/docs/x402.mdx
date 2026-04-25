@@ -1,0 +1,53 @@
+---
+layout: ../../layouts/Doc.astro
+title: How x402 works
+description: HTTP 402 + USDC on Base — pay-per-call without API keys.
+---
+
+# How x402 works
+
+x402 is a protocol that puts payment back into HTTP. The status code
+`402 Payment Required` was reserved in HTTP/1.1 (1997) and never widely used —
+x402 wires it up to USDC stablecoin transfers on EVM chains.
+
+## The flow
+
+```
+1.  client → server      GET /mix/CAISO/live
+2.  server → client      402 Payment Required
+                          { accepts: [{ network, amount, payTo, asset }] }
+3.  client signs         EIP-3009 transferWithAuthorization (off-chain, free)
+4.  client → server      GET /mix/CAISO/live
+                          X-PAYMENT: <base64-encoded-payload>
+5.  server verifies      via facilitator (x402.org/facilitator)
+6.  server → client      200 OK + JSON body
+                          X-PAYMENT-RESPONSE: <settlement tx hash>
+```
+
+The signature in step 3 is **gasless for the client** — the facilitator pays
+the gas to broadcast the USDC transfer on Base. The client only signs an
+EIP-712 typed message authorizing the spend.
+
+## Why we picked it
+
+| Concern | Traditional API key | x402 |
+|---|---|---|
+| Onboarding | Email signup → dashboard → key | Wallet signature, zero accounts |
+| Billing | Monthly subscription, prepay | Pay per call, exact USDC amount |
+| Revocation | Rotate key, update env | Stop signing, no shared secret |
+| Auditability | Server-side logs only | On-chain settlement tx per call |
+| Replay attack | TLS + key rotation | EIP-3009 nonce makes each authorization single-use |
+
+## Networks
+
+- **Production:** `eip155:8453` (Base mainnet) — real USDC
+- **Testnet:** `eip155:84532` (Base Sepolia) — free testnet USDC from any faucet
+
+The Grid402 API auto-routes to the same facilitator (`x402.org/facilitator`)
+for both. Use Sepolia while building.
+
+## Further reading
+
+- [x402.org](https://x402.org) — protocol spec
+- [Coinbase CDP x402 docs](https://docs.cdp.coinbase.com/x402)
+- [EIP-3009](https://eips.ethereum.org/EIPS/eip-3009) — `transferWithAuthorization`
