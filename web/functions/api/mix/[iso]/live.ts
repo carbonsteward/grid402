@@ -211,21 +211,40 @@ function estimateERCOT(): Mix {
   return shape("ERCOT", genMW, { src: "https://www.ercot.com/gridmktinfo/dashboards/gridconditions/fuelmix", source: "estimate" });
 }
 
-function estimateAEMO(): Mix {
+// AEMO regional profiles — distinct mixes per state to make the map meaningful.
+// CI ranges roughly match observed historical NEM dispatch: TAS very clean,
+// VIC/NSW/QLD coal-heavy, SA wind-leading.
+type AemoRegion = "NSW1" | "QLD1" | "SA1" | "TAS1" | "VIC1" | "NEM";
+
+const AEMO_REGION_BASES: Record<AemoRegion, () => { coal: number; wind: number; solar: number; gas: number; hydro: number; battery: number; biomass?: number; other?: number }> = {
+  NSW1: () => ({ coal: 7500, wind: 850, solar: 2200, gas: 1100, hydro: 600, battery: 200, biomass: 90 }),
+  QLD1: () => ({ coal: 5800, wind: 250, solar: 2400, gas: 1900, hydro: 90, battery: 150, biomass: 60 }),
+  SA1:  () => ({ coal: 0,    wind: 1400, solar: 600, gas: 600, hydro: 0, battery: 250, biomass: 40 }),
+  TAS1: () => ({ coal: 0,    wind: 350, solar: 50, gas: 80, hydro: 1700, battery: 30, biomass: 10 }),
+  VIC1: () => ({ coal: 4200, wind: 1100, solar: 900, gas: 350, hydro: 700, battery: 200, biomass: 50 }),
+  NEM:  () => ({ coal: 17500,wind: 3950, solar: 6150, gas: 4030, hydro: 3090, battery: 830, biomass: 250 }),
+};
+
+function estimateAEMO(region: AemoRegion = "NEM"): Mix {
   const t = new Date();
   const hAEDT = (t.getUTCHours() + 11) % 24;
   const sun = hAEDT >= 6 && hAEDT <= 19 ? Math.sin(((hAEDT - 6) / 13) * Math.PI) : 0;
-  const genMW = {
-    coal: noise(9500),
-    wind: noise(3200),
-    solar: noise(7000 * sun),
-    gas: noise(2400),
-    hydro: noise(1500),
-    battery: noise(sun > 0.6 ? -300 : 600),
-    biomass: noise(180),
-    other: 100,
+  const base = AEMO_REGION_BASES[region]();
+  const genMW: Record<string, number> = {
+    coal: noise(base.coal),
+    wind: noise(base.wind),
+    solar: noise(base.solar * sun),
+    gas: noise(base.gas + (1 - sun) * (base.gas * 0.4)),
+    hydro: noise(base.hydro),
+    battery: noise(sun > 0.6 ? -base.battery * 0.5 : base.battery, 0.2),
+    biomass: noise(base.biomass ?? 60),
+    other: 60,
   };
-  return shape("AEMO", genMW, { zone: "NEM", src: "https://aemo.com.au/energy-systems/electricity/national-electricity-market-nem", source: "estimate" });
+  return shape("AEMO", genMW, {
+    zone: region,
+    src: `https://aemo.com.au/energy-systems/electricity/national-electricity-market-nem`,
+    source: "estimate",
+  });
 }
 
 function estimateKPX(): Mix {
@@ -264,8 +283,10 @@ function estimateGB(): Mix {
 
 // ---------- Handler -------------------------------------------------------
 
-export const onRequestGet: PagesFunction<Env> = async ({ params }) => {
+export const onRequestGet: PagesFunction<Env> = async ({ params, request }) => {
   const iso = String(params.iso ?? "").toUpperCase();
+  const url = new URL(request.url);
+  const region = (url.searchParams.get("region") ?? "").toUpperCase() as AemoRegion;
   const cors = {
     "Access-Control-Allow-Origin": "*",
     "Cache-Control": "public, max-age=60",
@@ -280,7 +301,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ params }) => {
       case "CAISO": mix = await tryCAISO(); break;
       case "ERCOT": mix = await tryERCOT(); break;
       case "GB":    mix = await tryGB(); break;
-      case "AEMO":  mix = estimateAEMO(); break;
+      case "AEMO":  mix = estimateAEMO(region in AEMO_REGION_BASES ? region : "NEM"); break;
       case "KPX":   mix = estimateKPX(); break;
       default:
         return new Response(JSON.stringify({ error: `Unknown ISO: ${iso}` }), { status: 404, headers: cors });
@@ -291,7 +312,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ params }) => {
       case "CAISO": mix = estimateCAISO(); break;
       case "ERCOT": mix = estimateERCOT(); break;
       case "GB":    mix = estimateGB(); break;
-      case "AEMO":  mix = estimateAEMO(); break;
+      case "AEMO":  mix = estimateAEMO(region in AEMO_REGION_BASES ? region : "NEM"); break;
       case "KPX":   mix = estimateKPX(); break;
       default:
         return new Response(JSON.stringify({ error: `Unknown ISO: ${iso}` }), { status: 404, headers: cors });

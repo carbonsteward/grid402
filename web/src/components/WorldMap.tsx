@@ -3,14 +3,32 @@ import maplibregl, { type Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { feature } from "topojson-client";
 import type { FeatureCollection, Geometry, Feature } from "geojson";
-import { getHistory, type ISO, type HistoricalSeries } from "../lib/api";
+import { getHistory, getMixRegion, getSpot, type ISO, type HistoricalSeries, type MixSnapshot, type SpotSnapshot } from "../lib/api";
 
 // Country numeric ISO 3166-1 IDs → ISO operator(s) covering them.
 const COUNTRY_TO_ISO: Record<string, Array<{ iso: ISO; weight: number; label?: string }>> = {
   "840": [{ iso: "CAISO", weight: 0.4, label: "California (CAISO)" }, { iso: "ERCOT", weight: 0.6, label: "Texas (ERCOT)" }],
   "410": [{ iso: "KPX", weight: 1, label: "South Korea (KPX)" }],
-  "036": [{ iso: "AEMO", weight: 1, label: "Australia NEM (AEMO)" }],
   "826": [{ iso: "GB" as ISO, weight: 1, label: "Great Britain (NESO)" }],
+};
+
+// AEMO sub-state regions (NEM). ID matches the geojson `id` we set in build.
+type AemoRegion = "NSW1" | "QLD1" | "SA1" | "TAS1" | "VIC1";
+const AEMO_REGIONS: Array<{ id: AemoRegion; label: string }> = [
+  { id: "NSW1", label: "New South Wales (NSW1)" },
+  { id: "QLD1", label: "Queensland (QLD1)" },
+  { id: "SA1",  label: "South Australia (SA1)" },
+  { id: "TAS1", label: "Tasmania (TAS1)" },
+  { id: "VIC1", label: "Victoria (VIC1)" },
+];
+
+// Default spot zone per ISO (used when sidebar opens)
+const DEFAULT_SPOT_ZONE: Record<string, string> = {
+  CAISO: "TH_NP15",
+  ERCOT: "HB_NORTH",
+  GB:    "GB",
+  KPX:   "KR",
+  AEMO:  "NEM",
 };
 
 const ISOS_TO_FETCH: ISO[] = ["CAISO", "ERCOT", "AEMO", "KPX", "GB" as ISO];
@@ -49,7 +67,10 @@ export default function WorldMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [topo, setTopo] = useState<FC | null>(null);
+  const [auStates, setAuStates] = useState<FC | null>(null);
   const [history, setHistory] = useState<Partial<Record<ISO, HistoricalSeries>>>({});
+  const [aemoRegions, setAemoRegions] = useState<Partial<Record<AemoRegion, MixSnapshot>>>({});
+  const [spot, setSpot] = useState<Partial<Record<ISO, SpotSnapshot>>>({});
   const [errs, setErrs] = useState<Partial<Record<ISO, string>>>({});
   const [selected, setSelected] = useState<string | null>("840");
   const [styleReady, setStyleReady] = useState(false);
@@ -70,7 +91,7 @@ export default function WorldMap() {
     return best.sort((a, b) => a - b);
   }, [history]);
 
-  // Load TopoJSON
+  // Load TopoJSON for countries + GeoJSON for AU states
   useEffect(() => {
     let cancelled = false;
     fetch("/data/countries-110m.json")
@@ -84,25 +105,51 @@ export default function WorldMap() {
         }));
         setTopo({ type: "FeatureCollection", features } as FC);
       });
+    fetch("/data/au-states.geojson")
+      .then(r => r.json())
+      .then((j: FC) => { if (!cancelled) setAuStates(j); });
     return () => { cancelled = true; };
   }, []);
 
-  // Poll history every 5 minutes (matches Pages Function Cache-Control max-age=300)
+  // Poll history + per-AEMO-region + spot prices every 5 minutes
   useEffect(() => {
     let cancelled = false;
     async function refresh() {
-      const r = await Promise.allSettled(
+      // History (for slider scrubbing)
+      const histR = await Promise.allSettled(
         ISOS_TO_FETCH.map(iso => getHistory(iso, { hours: HISTORY_HOURS, step: HISTORY_STEP }))
       );
+      // AEMO sub-state regions (live snapshot per region)
+      const auR = await Promise.allSettled(
+        AEMO_REGIONS.map(r => getMixRegion("AEMO" as ISO, r.id))
+      );
+      // Spot prices (default zone per ISO)
+      const spotR = await Promise.allSettled(
+        ISOS_TO_FETCH.map(iso => getSpot(iso, DEFAULT_SPOT_ZONE[iso] ?? "default"))
+      );
       if (cancelled) return;
+
       const h: typeof history = {};
       const e: typeof errs = {};
-      r.forEach((res, i) => {
+      histR.forEach((res, i) => {
         const iso = ISOS_TO_FETCH[i];
         if (res.status === "fulfilled") h[iso] = res.value;
         else e[iso] = (res.reason as Error).message;
       });
       setHistory(h);
+
+      const au: typeof aemoRegions = {};
+      auR.forEach((res, i) => {
+        if (res.status === "fulfilled") au[AEMO_REGIONS[i].id] = res.value;
+      });
+      setAemoRegions(au);
+
+      const s: typeof spot = {};
+      spotR.forEach((res, i) => {
+        const iso = ISOS_TO_FETCH[i];
+        if (res.status === "fulfilled") s[iso] = res.value;
+      });
+      setSpot(s);
       setErrs(e);
     }
     refresh();
@@ -200,6 +247,60 @@ export default function WorldMap() {
     map.on("mouseleave", "countries-fill", () => { map.getCanvas().style.cursor = ""; });
   }, [topo, styleReady]);
 
+  // Add AU states layer (sub-national) ON TOP of the country layer
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !auStates || !styleReady) return;
+    if (map.getSource("au-states")) return;
+
+    map.addSource("au-states", {
+      type: "geojson",
+      data: auStates as any,
+      promoteId: "aemo_region",
+    });
+
+    map.addLayer({
+      id: "au-states-fill",
+      type: "fill",
+      source: "au-states",
+      paint: {
+        "fill-color": ["coalesce", ["feature-state", "color"], "rgba(143, 143, 168, 0.18)"],
+        "fill-opacity": 0.85,
+      },
+    });
+
+    map.addLayer({
+      id: "au-states-stroke",
+      type: "line",
+      source: "au-states",
+      paint: {
+        "line-color": [
+          "case",
+          ["==", ["coalesce", ["feature-state", "selected"], false], true], "#F0F0EC",
+          "rgba(240,240,236,0.45)",
+        ],
+        "line-width": [
+          "case",
+          ["==", ["coalesce", ["feature-state", "selected"], false], true], 2,
+          0.6,
+        ],
+      },
+    });
+
+    map.on("click", "au-states-fill", (e) => {
+      const id = e.features?.[0]?.id as string | undefined;
+      if (id && (id === "NSW1" || id === "QLD1" || id === "SA1" || id === "TAS1" || id === "VIC1")) {
+        setSelected(`AU_${id}`);
+      }
+    });
+    map.on("mousemove", "au-states-fill", (e) => {
+      const id = e.features?.[0]?.id as string | undefined;
+      const isAemo = id === "NSW1" || id === "QLD1" || id === "SA1" || id === "TAS1" || id === "VIC1";
+      map.getCanvas().style.cursor = isAemo ? "pointer" : "";
+    });
+    map.on("mouseleave", "au-states-fill", () => { map.getCanvas().style.cursor = ""; });
+  }, [auStates, styleReady]);
+
   // Find each ISO's snapshot at the slider's UTC time
   const targetTs = timeline.length > 0 ? timeline[Math.round(sliderPct * (timeline.length - 1))] : null;
 
@@ -245,6 +346,7 @@ export default function WorldMap() {
     for (const f of topo.features) {
       const id = String(f.id ?? "");
       if (!id) continue;
+      // Australia (036) is now drawn as sub-states; dim the country fill so AU states show through.
       const covered = id in COUNTRY_TO_ISO;
       const ci = ciFor(id);
       map.setFeatureState(
@@ -256,12 +358,34 @@ export default function WorldMap() {
         },
       );
     }
-  }, [currentByIso, topo, styleReady, selected]);
 
-  const selectedMapping = selected ? COUNTRY_TO_ISO[selected] : undefined;
-  const selectedCountryName = selected && topo
-    ? topo.features.find(f => String(f.id) === selected)?.properties?.name
-    : undefined;
+    // Update AU states feature-state from per-region snapshots
+    if (auStates && map.getSource("au-states")) {
+      for (const f of auStates.features) {
+        const id = String(f.id ?? "");
+        if (!id) continue;
+        const region = id as AemoRegion;
+        const snap = aemoRegions[region];
+        const stateColor = snap ? ciColor(snap.ci_g_per_kwh) : "rgba(143, 143, 168, 0.18)";
+        map.setFeatureState(
+          { source: "au-states", id },
+          {
+            color: stateColor,
+            selected: selected === `AU_${id}`,
+          },
+        );
+      }
+    }
+  }, [currentByIso, topo, styleReady, selected, auStates, aemoRegions]);
+
+  const isAemoState = selected?.startsWith("AU_") ?? false;
+  const aemoSelectedRegion = isAemoState ? (selected!.slice(3) as AemoRegion) : null;
+  const selectedMapping = isAemoState
+    ? AEMO_REGIONS.filter(r => r.id === aemoSelectedRegion).map(r => ({ iso: "AEMO" as ISO, weight: 1, label: r.label }))
+    : (selected ? COUNTRY_TO_ISO[selected] : undefined);
+  const selectedCountryName = isAemoState
+    ? (auStates?.features.find(f => String(f.id) === aemoSelectedRegion)?.properties?.name as string | undefined)
+    : (selected && topo ? topo.features.find(f => String(f.id) === selected)?.properties?.name : undefined);
 
   const displayedTs = isLive ? (timeline[timeline.length - 1] ?? Date.now()) : (targetTs ?? Date.now());
 
@@ -313,7 +437,13 @@ export default function WorldMap() {
           countryId={selected}
           countryName={selectedCountryName}
           mapping={selectedMapping}
-          currentByIso={currentByIso}
+          currentByIso={
+            // For AU sub-state selection, override AEMO snapshot with the region's data
+            isAemoState && aemoSelectedRegion && aemoRegions[aemoSelectedRegion]
+              ? { ...currentByIso, AEMO: aemoRegions[aemoSelectedRegion]! }
+              : currentByIso
+          }
+          spot={spot}
           errors={errs}
           displayedTs={displayedTs}
           isLive={isLive}
@@ -407,18 +537,19 @@ function TimeSlider({
 }
 
 function DetailPanel({
-  countryId, countryName, mapping, currentByIso, errors, displayedTs, isLive, onClose,
+  countryId, countryName, mapping, currentByIso, spot, errors, displayedTs, isLive, onClose,
 }: {
   countryId: string | null;
   countryName: string | undefined;
   mapping: Array<{ iso: ISO; weight: number; label?: string }> | undefined;
   currentByIso: Partial<Record<ISO, Snapshot>>;
+  spot: Partial<Record<ISO, SpotSnapshot>>;
   errors: Partial<Record<ISO, string>>;
   displayedTs: number;
   isLive: boolean;
   onClose: () => void;
 }) {
-  const open = !!(countryId && mapping);
+  const open = !!(countryId && mapping && mapping.length > 0);
   if (!open) return null;
 
   const aggregateMix: Record<string, number> = {};
@@ -481,20 +612,51 @@ function DetailPanel({
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
 
-        <div className="grid grid-cols-3 gap-2 mb-5">
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="rounded-lg p-2.5" style={{ backgroundColor: ci != null ? rgbA(ciColor(ci), 0.15) : "rgba(255,255,255,0.05)" }}>
             <div className="text-xl font-bold tabular-nums">{ci != null ? Math.round(ci) : "—"}</div>
             <div className="text-[9px] text-[var(--color-text-muted)] uppercase tracking-wider mt-0.5">gCO₂/kWh</div>
           </div>
-          <div className="rounded-lg p-2.5 bg-[rgba(78,205,196,0.08)]">
+          <div className="rounded-lg p-2.5 bg-[rgba(0,188,188,0.08)]">
             <div className="text-xl font-bold tabular-nums">{Math.round(carbonFreePct)}%</div>
-            <div className="text-[9px] text-[var(--color-accent-mint)] uppercase tracking-wider mt-0.5">carbon-free</div>
+            <div className="text-[9px] text-[var(--color-accent-primary)] uppercase tracking-wider mt-0.5">carbon-free</div>
           </div>
-          <div className="rounded-lg p-2.5 bg-[rgba(127,217,160,0.08)]">
+          <div className="rounded-lg p-2.5 bg-[rgba(77,222,222,0.08)]">
             <div className="text-xl font-bold tabular-nums">{Math.round(renewablePct)}%</div>
-            <div className="text-[9px] text-[#7FD9A0] uppercase tracking-wider mt-0.5">renewable</div>
+            <div className="text-[9px] text-[var(--color-accent-light)] uppercase tracking-wider mt-0.5">renewable</div>
           </div>
         </div>
+
+        {/* Spot price */}
+        {(() => {
+          const primaryIso = mapping[0]?.iso;
+          const sp = primaryIso ? spot[primaryIso] : undefined;
+          if (!sp) return null;
+          const fmt = (n: number) => n >= 100 ? n.toFixed(0) : n.toFixed(2);
+          return (
+            <div className="rounded-lg p-3 mb-4 bg-[rgba(255,208,102,0.05)] border border-[rgba(255,208,102,0.15)]">
+              <div className="flex items-baseline justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-[var(--color-accent-warm)] font-semibold">
+                  Spot price · {sp.zone}
+                </span>
+                <span className="text-[10px] text-[var(--color-text-muted)] font-mono">
+                  {sp.source === "live" ? "live" : "estimate"}
+                </span>
+              </div>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-2xl font-bold tabular-nums">${fmt(sp.price_usd_per_mwh)}</span>
+                <span className="text-xs text-[var(--color-text-muted)]">USD/MWh</span>
+              </div>
+              {(sp as any).price_native && sp.currency !== "USD" && (
+                <div className="text-[11px] text-[var(--color-text-muted)] font-mono">
+                  {(sp as any).price_native >= 1000
+                    ? `${((sp as any).price_native / 1000).toFixed(1)}k`
+                    : (sp as any).price_native.toFixed(0)} {sp.currency}/MWh
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <h4 className="text-xs font-semibold mb-2 flex items-center justify-between text-[var(--color-text-muted)] uppercase tracking-wider">
           <span>Generation mix</span>

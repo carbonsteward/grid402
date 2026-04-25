@@ -66,6 +66,16 @@ export async function getHistory(iso: ISO, opts?: { hours?: number; step?: numbe
   }
 }
 
+export async function getMixRegion(iso: ISO, region: string, opts?: { timeoutMs?: number; signal?: AbortSignal }): Promise<MixSnapshot> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  try {
+    return await fetchJSON<MixSnapshot>(`/mix/${iso}/live?region=${encodeURIComponent(region)}`, opts?.signal ?? ctrl.signal);
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 export async function getMix(iso: ISO, opts?: { timeoutMs?: number; signal?: AbortSignal }): Promise<MixSnapshot> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS);
@@ -75,6 +85,12 @@ export async function getMix(iso: ISO, opts?: { timeoutMs?: number; signal?: Abo
     clearTimeout(t);
   }
 }
+
+export type SpotPrice = SpotSnapshot & {
+  price_native?: number;
+  fx_rate?: number;
+  source: "live" | "estimate";
+};
 
 export async function getSpot(iso: ISO, zone: string, opts?: { timeoutMs?: number; signal?: AbortSignal }): Promise<SpotSnapshot> {
   const ctrl = new AbortController();
