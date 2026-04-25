@@ -1,0 +1,24 @@
+{
+  "name": "@grid402/agent-demo",
+  "version": "0.1.0",
+  "description": "AgentKit-based demo that pays Grid402 for CAISO spot prices.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@coinbase/agentkit": "^0.10.4",
+    "@coinbase/agentkit-langchain": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/langgraph": "^0.2.0",
+    "@langchain/openai": "^0.3.0",
+    "dotenv": "^17.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
