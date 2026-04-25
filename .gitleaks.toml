@@ -1,0 +1,45 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "curl-auth-header"
+description = "Authorization: Bearer in curl examples"
+regex = '''Authorization:\s*Bearer\s+(sk_live_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})'''
+keywords = ["sk_live_", "sk-"]
+
+[allowlist]
+description = "Allowlist: docs/example placeholders + public on-chain identifiers"
+regexTarget = "match"
+regexes = [
+  '''sk_live_<REDACTED>''',
+  '''sk_live_xxx''',
+  '''sk_live_[xX]+''',
+  # Public USDC / WETH / DAI / etc contract addresses on Base / Ethereum / mainstream chains
+  '''0x833589fcd6edb6e08f4c7c32d4f71b54bda02913''',
+  '''0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48''',
+  '''0xadf37754f5139a992493ce3c0b4cb54ec19e6cd8''',
+  '''0xbc33b4d48f76d17a18036a76f96c4181c5f8ad36''',
+  '''0xfb31f85a''',
+  '''0x9cdf242ef7975d8c68dba0b1f04e7d1d7da03ec0''',
+  '''0xd8da6bf26964af9d7eed9e03e53415d37aa96045''',
+  # Nansen-cited example Solana token mints (public)
+  '''Cm6fNnMk7NfzStP9CZpsQA''',
+  # KPX function name false positive
+  '''getSmpWithForecastDemand''',
+  '''getSmp''',
+]
+paths = [
+  '''.*\.example$''',
+  '''.*\.gitleaks\.toml$''',
+  # Nansen research docs reference public on-chain contract addresses;
+  # the generic-api-key rule otherwise flags every 40-hex 0x... as a secret.
+  '''hosts/nansen/.*\.md$''',
+]
+stopwords = [
+  "PLACEHOLDER",
+  "REDACTED",
+  "EXAMPLE",
+  "0xYour",
+  "<your",
+  "YOUR_",
+]
