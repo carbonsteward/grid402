@@ -59,6 +59,86 @@ import WorldMap from "../components/WorldMap";
     </div>
   </section>
 
+  <section class="max-w-6xl mx-auto px-6 pb-12">
+    <div class="mb-5">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-2">
+        Who calls this API
+      </p>
+      <h2 class="text-2xl md:text-3xl font-semibold">Four agent scenarios. One pay-per-call API.</h2>
+      <p class="text-sm text-[var(--color-text-muted)] mt-2 max-w-2xl">
+        Every scenario below requires sub-hourly grid data — annual averages can't see the 22-minute
+        windows where it matters. Each maps to one or more of the three signals we sell.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.03)] p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(0,188,188,0.15)] text-[var(--color-accent-primary)] font-mono font-semibold">Mix + CI</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">when to run</span>
+        </div>
+        <h3 class="font-bold text-lg mb-1.5">Inference scheduler</h3>
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
+          The agent calls <code class="font-mono text-xs text-[var(--color-accent-primary)]">/mix/KPX/live</code> every 5 min, sees CI
+          falling from 450 → 312 gCO₂/kWh as solar ramps up, and defers a non-urgent batch by 22 min.
+          A 30% emissions cut on the same workload — invisible to any annual-average API.
+        </p>
+      </div>
+
+      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,208,102,0.03)] p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(255,208,102,0.15)] text-[var(--color-accent-warm)] font-mono font-semibold">Spot</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">where to run</span>
+        </div>
+        <h3 class="font-bold text-lg mb-1.5">GPU workload router</h3>
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
+          Training jobs hit <code class="font-mono text-xs text-[var(--color-accent-warm)]">/spot/ERCOT/HB_NORTH</code>
+          and <code class="font-mono text-xs text-[var(--color-accent-warm)]">/spot/CAISO/TH_NP15</code>, see
+          ERCOT at $18/MWh vs CAISO at $94/MWh, and route the next checkpoint to a Texas region. Per-call
+          arbitrage on wholesale electricity, not retail tariffs.
+        </p>
+      </div>
+
+      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(78,205,196,0.04)] p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(78,205,196,0.18)] text-[var(--color-accent-light)] font-mono font-semibold">Mix + CI + Spot</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">when + where</span>
+        </div>
+        <h3 class="font-bold text-lg mb-1.5">EV / Tesla charging agent</h3>
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
+          Two Superchargers, 3 km apart. The agent sees one is on 70% solar at 11:00 (CI 142, $32/MWh),
+          the other on 60% gas at 18:00 demand-peak (CI 480, $210/MWh). It picks the clean+cheap one.
+          Per-charge: cleaner kWh, lower cost, and a receipt that proves both.
+        </p>
+      </div>
+
+      <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,107,53,0.03)] p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[rgba(255,107,53,0.15)] text-[var(--color-accent-hot)] font-mono font-semibold">Combined</span>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">audit / proof</span>
+        </div>
+        <h3 class="font-bold text-lg mb-1.5">24/7 CFE proof · DePIN slashing · CBAM</h3>
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
+          Every Grid402 response is a signed receipt: which 5-min interval, which zone, what mix, what CI,
+          what spot price. Use it to prove a workload ran on carbon-free electricity, slash DePIN nodes
+          on dirty grids, or file hourly CBAM reports without a $50k consultant.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] p-5">
+      <p class="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold mb-2">
+        Why per-call, not annual
+      </p>
+      <p class="text-base text-[var(--color-text-light)] leading-relaxed">
+        We pulled the top 10 x402 agents on x402scan: <strong class="text-[var(--color-accent-primary)]">8 of 10 run on globally-anycast infra</strong>
+        (Cloudflare Workers, Vercel Edge, GCP global LB). The same call lands in MISO when invoked from
+        Chicago, ERCOT from Houston, and LHR from London. Annual carbon accounting can't capture this —
+        only per-call grid receipts can.
+      </p>
+    </div>
+  </section>
+
   <section class="max-w-[1400px] mx-auto px-6 pb-16">
     <div class="mb-4 flex items-baseline justify-between">
       <h2 class="text-2xl font-semibold">Live carbon intensity</h2>
