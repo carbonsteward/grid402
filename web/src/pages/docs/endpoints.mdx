@@ -16,10 +16,13 @@ All routes return JSON. Paid routes return `402` until x402-signed.
 |---|---|---|---|
 | `GET /mix/CAISO/live` | California, USA | 5 min | $0.002 |
 | `GET /mix/ERCOT/live` | Texas, USA | 5 min | $0.002 |
+| `GET /mix/GB/live`    | Great Britain (NESO) | 30 min | $0.002 |
 | `GET /mix/KPX/live`   | Korea | 5–60 min | $0.003 |
 | `GET /mix/AEMO/:region/live` | Australia (NEM) | 5 min | $0.002 |
 
 `:region` for AEMO is one of `NSW1`, `QLD1`, `SA1`, `TAS1`, `VIC1`.
+
+GB uses the [NESO Carbon Intensity API](https://api.carbonintensity.org.uk) — no key required, real upstream.
 
 ## Spot price
 

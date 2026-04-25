@@ -44,9 +44,17 @@ each one.
 - **Freshness:** ~5 minutes behind real-time
 - **Notes:** WEM (Western Australia) not yet covered — different dispatch system.
 
+## GB — Great Britain (NESO)
+
+- **Source:** National Energy System Operator Carbon Intensity API (`api.carbonintensity.org.uk`)
+- **Mix granularity:** 30 minutes (national aggregate, no regional split in v1)
+- **Spot price:** not yet (BMRS via Elexon needs a free account — coming in v2)
+- **Freshness:** ~30 minutes behind real-time
+- **Notes:** Truly key-free upstream. Returns both percentage mix and a published carbon intensity value (we use NESO's number directly when available). Wind-heavy, often under 150 gCO₂/kWh.
+
 ## Coming soon
 
-- **GB Carbon Intensity API** — Great Britain (no auth required, freely available)
 - **ENTSO-E** — 27 EU countries (one token unlocks all)
-- **NYISO** — New York (CSV feeds)
+- **NYISO** — New York (CSV feeds, no key)
 - **PJM** — Mid-Atlantic / Midwest USA
+- **AEMO live** — switch from estimate to real upstream
