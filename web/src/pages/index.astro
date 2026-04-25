@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import WorldMap from "../components/WorldMap";
+import ApiStatus from "../components/ApiStatus";
 ---
 <Layout>
   {/* Compact hero strip — keeps the thesis visible without burying the map */}
@@ -33,9 +34,9 @@ import WorldMap from "../components/WorldMap";
 
   {/* MAP — primary interface */}
   <section class="max-w-[1400px] mx-auto px-6 pb-10">
-    <div class="mb-3 flex items-baseline justify-between">
+    <div class="mb-3 flex items-baseline justify-between gap-4 flex-wrap">
       <h2 class="text-base md:text-lg font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Live carbon intensity</h2>
-      <span class="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-mono">USA · UK · KOREA · AUSTRALIA</span>
+      <ApiStatus client:idle />
     </div>
     <WorldMap client:load />
   </section>
