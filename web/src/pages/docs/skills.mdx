@@ -1,0 +1,99 @@
+---
+layout: ../../layouts/Doc.astro
+title: Agent skill set
+description: A curated catalog of the six skills an autonomous agent needs for programmable demand response on Base. Grid402 ships one of them.
+---
+
+# Agent skill set for programmable demand response
+
+An autonomous agent that does per-call demand response on Base needs more than one API. Grid402 ships the timing/grid-receipts skill; five other skills exist already in adjacent infrastructure on or near Base. This page is the curated overview. The full canonical document — install patterns, code samples, contributing guide — lives at [`skills.md`](https://github.com/grid402/grid402/blob/main/skills.md) in the repo.
+
+## The six skills
+
+| # | Skill | Provider | What the agent gets |
+|---|---|---|---|
+| 1 | Grid receipts (timing and routing) | **Grid402** | per-call generation mix, emissions, and wholesale price for any supported ISO region |
+| 2 | Wallet and payment | **Coinbase CDP Server Wallet** | EIP-3009 signing, USDC custody, gasless transfers |
+| 3 | Reasoning | **FLock** (or any OpenAI-compatible LLM provider) | LLM inference per token |
+| 4 | Self-observation | **Nansen** | own wallet history, peer labels, payee traction, multi-chain wallet analytics |
+| 5 | Context (web and social) | **Selanet** | scrape Twitter / Xiaohongshu / YouTube / LinkedIn / free-form URLs through a network of real browser nodes |
+| 6 | Discovery | **Coinbase AgentKit + x402 Bazaar** | `discover_x402_services` to auto-find paid endpoints by keyword |
+
+An agent wired with all six is fully equipped to decide when and where to run, execute its own payments, reason about the data it pays for, observe its own treasury, gather unstructured context from the open web, and discover new skills as the ecosystem grows.
+
+## Grid402's product position
+
+**One skill of six, plus curation of the catalog.** We ship the timing primitive (skill 1) and document the full skill set so any developer can compose a complete autonomous-DR agent without hunting across five unrelated vendor docs.
+
+## A note on the term "skill"
+
+Different ecosystems use different vocabulary for the same primitive: Anthropic Claude calls them *Skills*, Coinbase AgentKit calls them *Action Providers*, MCP and LangChain call them *Tools*, Selanet calls them *Skills*, OpenAI Agents SDK calls them *Tools*. This document uses **skill** as the umbrella term.
+
+## Wiring the full set in AgentKit
+
+A minimal Coinbase AgentKit + LangGraph runtime that exposes all six skills:
+
+```ts
+import {
+  AgentKit,
+  CdpEvmWalletProvider,
+  walletActionProvider,
+  x402ActionProvider,
+} from "@coinbase/agentkit";
+import { ChatOpenAI } from "@langchain/openai";
+
+import { grid402ActionProvider } from "./skills/grid402.js";   // skill 1
+import { nansenActionProvider }  from "./skills/nansen.js";    // skill 4
+import { selanetActionProvider } from "./skills/selanet.js";   // skill 5
+
+const walletProvider = await CdpEvmWalletProvider.configureWithWallet({
+  apiKeyId:     process.env.CDP_API_KEY_ID!,
+  apiKeySecret: process.env.CDP_API_KEY_SECRET!,
+  walletSecret: process.env.CDP_WALLET_SECRET!,
+  networkId:    "base-sepolia",
+});
+
+const agentkit = await AgentKit.from({
+  walletProvider,
+  actionProviders: [
+    walletActionProvider(),       // skill 2: wallet and payment
+    x402ActionProvider(),         // skill 6: discovery + paid HTTP
+    grid402ActionProvider(),      // skill 1: grid receipts
+    nansenActionProvider(),       // skill 4: self-observation
+    selanetActionProvider(),      // skill 5: context (web/social)
+  ],
+});
+
+// skill 3: reasoning — FLock as OpenAI-compatible drop-in
+const model = new ChatOpenAI({
+  model:   "qwen3-235b-a22b-thinking-2507",
+  apiKey:  process.env.FLOCK_LLM_API_KEY,
+  configuration: { baseURL: "https://api.flock.io/v1" },
+});
+```
+
+A single prompt — *"Find the cleanest 4-hour window in CAISO NP15 today, check whether my wallet has paid for similar data this month, and pull any X.com posts mentioning a CAISO blackout in the last 24 hours"* — exercises every one of the six skills in order.
+
+## Minimum viable agents
+
+Not every agent needs all six. Decompose by use case:
+
+| Use case | Required skills | Optional |
+|---|---|---|
+| Carbon-aware compute scheduler in one fixed region | 1 (Grid402), 2 (CDP), 3 (LLM) | 4 (Nansen), 6 (Discovery) |
+| DePIN green-routing oracle (smart contract reading Grid402) | 1 only — solidity contract calls x402 directly, no LLM needed | none |
+| Korean-context news enrichment | 1 (Grid402), 2 (CDP), 5 (Selanet) | 3 (LLM) for synthesis |
+| Treasury monitoring agent (no compute decisions) | 2 (CDP), 4 (Nansen) | 3 (LLM) for daily summary |
+| Multi-region GPU router justifying decisions on chain | 1, 2, 3, 6 — and V3 attestation when shipping | 5 for context |
+
+The full six-skill stack is the upper bound. Most production agents use three to five.
+
+## Roadmap
+
+- **V1 (4 weeks):** Grid402 ships its own MCP server at `mcp.grid402.xyz`, plus `@grid402/agentkit-action-provider` npm package. Listed in x402 Bazaar so `discover_x402_services({ keyword: "electricity" })` returns it.
+- **V2 (12 weeks):** Skill 1 expands with decision endpoints (`/cleanest-window`, `/run-now`, `/best-region-now`) and self-knowledge endpoints (`/whereami`, `/footprint/session`).
+- **V3 (6 months):** Skill 1 adds on-chain attestation (`/attestation/<tx_hash>` with EIP-712 signatures) for trust-minimized DePIN/AVS settlement.
+
+## Read the full document
+
+The repository copy at [`skills.md`](https://github.com/grid402/grid402/blob/main/skills.md) includes per-skill install patterns, complete call examples, redistribution notes for each provider, and contributing guidelines.
