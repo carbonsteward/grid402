@@ -1,7 +1,7 @@
 ---
 layout: ../../layouts/Doc.astro
 title: Endpoints
-description: Every Grid402 route — spot, mix, emissions, combined.
+description: Every Grid402 route — mix (primary), emissions, spot price, combined.
 ---
 
 # Endpoints
@@ -10,7 +10,14 @@ Base URL: `https://grid402.climatebrain.xyz/api`
 
 All routes return JSON. Paid routes return `402` until x402-signed.
 
-## Mix (generation breakdown + carbon intensity)
+> **Hierarchy** — the **mix** endpoints are the primary product. Emissions are computed
+> from the mix using IPCC AR6 lifecycle factors. Spot price is bundled alongside as a
+> commodity signal. **Combined** packs all three into a single HTTP round-trip — the natural
+> unit for an agent making a carbon-aware load-shift decision.
+
+## Mix — generation breakdown + carbon intensity *(primary)*
+
+The crown-jewel signal. Sub-hourly fuel mix per ISO region, with self-computed gCO₂/kWh embedded.
 
 | Route | ISO | Granularity | Cost |
 |---|---|---|---|
@@ -18,43 +25,76 @@ All routes return JSON. Paid routes return `402` until x402-signed.
 | `GET /mix/ERCOT/live` | Texas, USA | 5 min | $0.002 |
 | `GET /mix/GB/live`    | Great Britain (NESO) | 30 min | $0.002 |
 | `GET /mix/KPX/live`   | Korea | 5–60 min | $0.003 |
-| `GET /mix/AEMO/:region/live` | Australia (NEM) | 5 min | $0.002 |
+| `GET /mix/AEMO/live?region=:r` | Australia (NEM) | 5 min | $0.002 |
 
-`:region` for AEMO is one of `NSW1`, `QLD1`, `SA1`, `TAS1`, `VIC1`.
+`:r` for AEMO is one of `NSW1`, `QLD1`, `SA1`, `TAS1`, `VIC1`. Each NEM region is dispatched
+independently and has a distinct CI profile (TAS1 is hydro-clean, QLD1 is coal-heavy).
 
 GB uses the [NESO Carbon Intensity API](https://api.carbonintensity.org.uk) — no key required, real upstream.
 
-## Spot price
+### History (for time-series scrubbing)
 
-| Route | Currency | Granularity |
-|---|---|---|
-| `GET /spot/CAISO/:zone/live` | USD/MWh | 5–15 min |
-| `GET /spot/ERCOT/:hub/live` | USD/MWh | 5–15 min |
-| `GET /spot/KPX/:zone/live`   | KRW/MWh + USD conversion | hourly SMP |
-| `GET /spot/AEMO/:region/live` | AUD/MWh + USD conversion | 5 min RRP |
+| Route | Description |
+|---|---|
+| `GET /mix/{ISO}/history?hours=24&step=30` | Time-series, 30-min slots over the last 24 hours |
 
-## Emissions (gCO₂eq per kWh)
+Returns `{ iso, source, step_minutes, series: [{ ts, ci_g_per_kwh, generation_mw, pct }] }`.
+
+## Emissions — self-computed gCO₂/kWh *(derived from mix)*
 
 | Route | Method |
 |---|---|
-| `GET /emissions/CAISO/live` | computed from mix × IPCC AR6 fuel factors |
+| `GET /emissions/CAISO/live` | Σ (fuel\_MW × IPCC AR6 lifecycle factor) / total\_MW |
 | `GET /emissions/ERCOT/live` | same |
+| `GET /emissions/GB/live` | same (with NESO's published intensity as override when available) |
 | `GET /emissions/KPX/live`   | same |
-| `GET /emissions/AEMO/:region/live` | same |
+| `GET /emissions/AEMO/live?region=:r` | same |
 
-## Combined (one call → mix + spot + emissions)
+Every response includes `factor_source` (URL to the IPCC AR6 WG3 Annex III table) and
+`method: "self_computed"` so auditors can trace the assumption. We do not redistribute
+Electricity Maps' carbon-intensity numbers — every figure is independently derivable.
+
+## Spot price — wholesale clearing price *(bundled)*
+
+| Route | Currency | Granularity |
+|---|---|---|
+| `GET /spot/CAISO/:zone/live` | USD/MWh (LMP) | 5–15 min |
+| `GET /spot/ERCOT/:hub/live` | USD/MWh (LMP) | 5–15 min |
+| `GET /spot/GB/:zone/live` | GBP + USD/MWh | 30 min |
+| `GET /spot/KPX/:zone/live`   | KRW + USD/MWh (SMP) | hourly |
+| `GET /spot/AEMO/:region/live` | AUD + USD/MWh (RRP) | 5 min |
+
+Native-currency price + USD-converted price both returned, with the FX rate cited.
+
+## Combined — one call, three signals *(recommended for agents)*
 
 | Route | Cost |
 |---|---|
 | `GET /combined/CAISO/:zone/live` | $0.005 |
 | `GET /combined/ERCOT/:hub/live` | $0.005 |
+| `GET /combined/GB/:zone/live` | $0.005 |
 | `GET /combined/KPX/:zone/live`   | $0.006 |
 | `GET /combined/AEMO/:region/live` | $0.005 |
 
-Combined is cheaper than three separate calls. Use it for dashboards.
+One HTTP request → one USDC tx → mix + emissions + spot. Cheaper than three separate calls.
+Use this for dashboards, carbon-aware schedulers, and any agent that's making a *decision* per tick.
 
 ## Free routes (no payment)
 
-- `GET /` — service info + version
+- `GET /` — service info + endpoint catalog
 - `GET /health` — `{ ok: true, ts }`
 - `GET /schema/:iso` — JSON schema for that ISO's responses
+
+---
+
+## Demo tier vs production tier
+
+The endpoints under `https://grid402.climatebrain.xyz/api` are the **free demo tier** —
+unmetered, rate-limited at the CDN edge, and deployed as Cloudflare Pages Functions.
+They exist so the live map and this documentation work without forcing first-time visitors
+through a wallet handshake.
+
+The **x402-gated production API** (the prices in the tables above) lives in
+[`api/`](https://github.com/carbonsteward/grid402/tree/main/api) of the repo and runs
+locally / on Railway / on Cloudflare Workers. Same data, real billing, real on-chain
+settlement. Production deploy URL is being staged.

@@ -18,6 +18,15 @@ Pay-per-call API for sub-hourly carbon intensity, generation mix, and spot price
 
 Grid402 is a **data primitive for AI agents**. It exposes the world's electricity grid — generation mix, carbon intensity, spot prices — as plain HTTP, metered per request, settled in USDC on Base. No keys, no dashboards, no annual contracts. The HTTP request *is* the on-chain payment.
 
+### What we actually sell
+
+|   | Product | Why it's at this tier |
+|---|---|---|
+| **Primary** | **5-minute generation mix + carbon intensity** | The moat. The signal that makes 24/7 CFE verification, hourly CBAM reporting, and DePIN slashing computationally possible. **Electricity Maps gates this at €6,000/year per signal**; we sell it at ~$0.005/call. |
+| **Derived** | Self-computed gCO₂/kWh | Mix × IPCC AR6 lifecycle factors. Audit-traceable: every response cites the factor source. We never redistribute vendor numbers. |
+| **Bundled** | Spot price (LMP / SMP / RRP) | Already a commodity — public ISO feeds, GridStatus, dozens of vendors. We ship it so agents have one HTTP call for both arbitrage signals. |
+| **Combined** | All three in one request | Recommended for agents. One HTTP round-trip → one USDC tx → mix + emissions + price. |
+
 The live demo above is also a working **open-source clone of [Electricity Maps](https://app.electricitymaps.com)**, dark-themed with the [ClimateBrain](https://climatebrain.xyz) brand. Same visual language as the gold-standard reference, with sub-national choropleth, time slider, and click-to-drill sidebar — all served from a single Cloudflare Pages deploy.
 
 ## Why this exists

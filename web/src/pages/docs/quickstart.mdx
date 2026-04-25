@@ -1,36 +1,52 @@
 ---
 layout: ../../layouts/Doc.astro
 title: Quickstart
-description: Make your first paid Grid402 call in under 60 seconds.
+description: Make your first paid Grid402 call in under 60 seconds. Starts with /mix — the primary signal.
 ---
 
 # Quickstart
 
-Grid402 endpoints return `402 Payment Required` with an x402 challenge until
-you attach a signed payload. The challenge says how much USDC the call costs
-and which network to settle on (Base mainnet or Base Sepolia for testing).
+Grid402's primary product is **5-minute generation mix and the carbon intensity computed from it**.
+This guide makes your first paid `/mix` call in three steps.
 
-## 1. Try it without paying
+(Spot price and combined-signal endpoints follow the same pattern — once `/mix` works,
+the others are free swaps.)
 
-Free probe — no wallet needed:
+## 1. Probe the endpoint (free, no wallet)
+
+The demo tier at `grid402.climatebrain.xyz/api` is unmetered. You can call it without payment:
 
 ```bash
 curl https://grid402.climatebrain.xyz/api/mix/CAISO/live
-# => 402 Payment Required
-# => { "x402Version": 1, "accepts": [ ... ], "error": "Payment required" }
+# => 200 OK
+# => { "iso": "CAISO", "ci_g_per_kwh": 118,
+#      "pct": { "solar": 38.4, "wind": 10.5, "gas": 18.7, ... },
+#      "source": "live" }
 ```
 
-You'll see the cost, the recipient address, and the network in the `accepts` array.
+The **production** API (the one you pay for) returns `402 Payment Required` instead, with an
+x402 challenge body listing the cost, recipient address, and network:
+
+```bash
+curl -i https://api.grid402.xyz/mix/CAISO/live   # production URL, paid tier
+# => HTTP/1.1 402 Payment Required
+# => { "x402Version": 1,
+#      "accepts": [{ "scheme": "exact", "price": "$0.002",
+#                    "network": "eip155:8453", "payTo": "0x..." }],
+#      "error": "Payment required" }
+```
 
 ## 2. Pay with the x402 fetch helper
 
 Install the official client:
 
 ```bash
-pnpm add x402-fetch
+pnpm add x402-fetch viem
 ```
 
-Then make the call:
+Then make the call. The wrapper handles the 402 challenge, signs an
+[EIP-3009](https://eips.ethereum.org/EIPS/eip-3009) transfer authorization (gasless), and
+retries with the `X-PAYMENT` header attached:
 
 ```ts
 import { wrapFetchWithPayment } from "x402-fetch";
@@ -43,13 +59,13 @@ const client = createWalletClient({ account, chain: base, transport: http() });
 
 const fetch402 = wrapFetchWithPayment(fetch, client);
 
-const res = await fetch402("https://grid402.climatebrain.xyz/api/mix/CAISO/live");
+// The primary endpoint — generation mix + carbon intensity
+const res = await fetch402("https://api.grid402.xyz/mix/CAISO/live");
 const data = await res.json();
-console.log(data.ci_g_per_kwh, data.pct);
-```
 
-That's it — the client handles the 402 challenge, signs the USDC transfer
-authorization, retries with `X-PAYMENT` header, and gives you back the JSON.
+console.log(`CAISO is ${data.ci_g_per_kwh} gCO₂/kWh right now`);
+console.log(`Solar share: ${data.pct.solar}%`);
+```
 
 ## 3. What you get
 
@@ -58,10 +74,48 @@ authorization, retries with `X-PAYMENT` header, and gives you back the JSON.
   "iso": "CAISO",
   "ts": "2026-04-25T20:55:00Z",
   "generation_mw": { "solar": 8421, "wind": 2310, "gas": 4115, "nuclear": 2240 },
-  "pct": { "solar": 38.4, "wind": 10.5, "gas": 18.7, "nuclear": 10.2 },
-  "ci_g_per_kwh": 184,
-  "source_url": "https://www.caiso.com/..."
+  "pct":           { "solar": 38.4,  "wind": 10.5, "gas": 18.7,  "nuclear": 10.2 },
+  "ci_g_per_kwh":  184,
+  "source_url":    "https://www.caiso.com/...",
+  "source":        "live"
 }
 ```
 
-Cost per call: **$0.002 USDC** (subject to change in v1).
+Cost per call: **$0.002 USDC** for `/mix`. Pricing for other endpoints is in
+[Endpoints](/docs/endpoints).
+
+## Want price too? Use `/combined`
+
+If your agent is making a decision (workload schedule, battery dispatch, EV charge timing)
+it usually wants mix + emissions + spot in one shot. The combined endpoint costs less than
+three separate calls:
+
+```ts
+const res = await fetch402("https://api.grid402.xyz/combined/CAISO/TH_NP15/live");
+const { mix, spot, emissions } = await res.json();
+//   one HTTP request, one USDC tx, three signals.
+```
+
+## Coinbase AgentKit (zero-code)
+
+If you're building with [Coinbase AgentKit](https://docs.cdp.coinbase.com/agentkit/welcome),
+the `x402ActionProvider` is already built in. Your agent calls Grid402 with no Grid402-specific code:
+
+```ts
+import { AgentKit, x402ActionProvider } from "@coinbase/agentkit";
+
+const agentkit = new AgentKit({
+  actionProviders: [
+    x402ActionProvider({
+      registeredServices: ["https://api.grid402.xyz"],
+      maxPaymentUsdc: 0.10,
+    }),
+  ],
+});
+
+// agent prompt: "what's the current CAISO carbon intensity?"
+// → agent discovers /mix/CAISO/live, pays, returns data. Day one.
+```
+
+See [`agent/`](https://github.com/carbonsteward/grid402/tree/main/agent) in the repo for a working
+LangChain + AgentKit + FLock LLM example.

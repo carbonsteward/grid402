@@ -8,12 +8,13 @@ import WorldMap from "../components/WorldMap";
       Pay-per-call · USDC on Base · x402
     </p>
     <h1 class="text-5xl md:text-6xl font-bold leading-tight tracking-tight">
-      The world's electricity grid,<br />
+      Sub-hourly grid mix<br />
       <span class="text-[var(--color-accent-primary)]">priced by the call.</span>
     </h1>
     <p class="mt-6 max-w-2xl text-lg text-[var(--color-text-muted)] leading-relaxed">
-      Sub-hourly generation mix, spot prices, and emissions for every major ISO.
-      No API key. No subscription. Pay for what you query — settled on-chain in USDC.
+      Grid402 sells the world's electricity <strong class="text-[var(--color-text-light)]">5-minute generation mix</strong> and
+      its <strong class="text-[var(--color-text-light)]">carbon intensity</strong> as plain HTTP — every request settled in
+      USDC on Base. Spot price comes bundled. No API key. No subscription. No annual contract.
     </p>
 
     <div class="mt-8 flex flex-wrap gap-3 text-sm">
@@ -29,6 +30,31 @@ import WorldMap from "../components/WorldMap";
     </div>
   </section>
 
+  <section class="max-w-6xl mx-auto px-6 pb-8">
+    <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.04)] p-5 md:p-6">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-2">
+        What we actually sell
+      </p>
+      <div class="grid md:grid-cols-3 gap-5">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-[var(--color-accent-primary)] font-semibold mb-1">Primary</p>
+          <p class="font-bold text-base">5-min generation mix + carbon intensity</p>
+          <p class="text-sm text-[var(--color-text-muted)] mt-1">The moat. Electricity Maps gates this at €6k/year per signal. We sell it for ~$0.005 per call.</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold mb-1">Bundled</p>
+          <p class="font-bold text-base">Spot price (LMP / SMP / RRP)</p>
+          <p class="text-sm text-[var(--color-text-muted)] mt-1">Wholesale clearing price per zone, in native currency + USD. Already a commodity; we ship it so agents have one HTTP call for both arbitrage signals.</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold mb-1">Derived</p>
+          <p class="font-bold text-base">Self-computed gCO₂/kWh</p>
+          <p class="text-sm text-[var(--color-text-muted)] mt-1">Mix × IPCC AR6 lifecycle factors. Audit-traceable: every response cites the factor source. No redistribution of vendor numbers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="max-w-[1400px] mx-auto px-6 pb-16">
     <div class="mb-4 flex items-baseline justify-between">
       <h2 class="text-2xl font-semibold">Live carbon intensity</h2>
@@ -40,16 +66,16 @@ import WorldMap from "../components/WorldMap";
   <section class="max-w-6xl mx-auto px-6 pb-24">
     <div class="grid md:grid-cols-3 gap-4">
       <div class="rounded-lg border border-[var(--color-grid-stroke)] p-6">
-        <h3 class="font-semibold text-lg mb-2">Sub-hourly mix</h3>
-        <p class="text-sm text-[var(--color-text-muted)]">5-minute generation breakdown direct from each ISO. Most competitors report hourly aggregates with 15+ minute lag.</p>
+        <h3 class="font-semibold text-lg mb-2">Why mix is the moat</h3>
+        <p class="text-sm text-[var(--color-text-muted)]">Hourly mix is widely commoditized. <strong class="text-[var(--color-text-light)]">5-minute</strong> mix is what makes 24/7 CFE verification, hourly CBAM reporting, and DePIN slashing computationally possible — and it's what's missing from every per-call API.</p>
       </div>
       <div class="rounded-lg border border-[var(--color-grid-stroke)] p-6">
         <h3 class="font-semibold text-lg mb-2">No API key</h3>
         <p class="text-sm text-[var(--color-text-muted)]">A wallet signature replaces signups, dashboards, billing portals. Hit the endpoint, sign a 402 challenge, get JSON.</p>
       </div>
       <div class="rounded-lg border border-[var(--color-grid-stroke)] p-6">
-        <h3 class="font-semibold text-lg mb-2">Spot prices included</h3>
-        <p class="text-sm text-[var(--color-text-muted)]">LMP (CAISO/ERCOT), SMP (KPX), RRP (AEMO). Carbon-aware compute meets price-aware load shifting.</p>
+        <h3 class="font-semibold text-lg mb-2">One call, three signals</h3>
+        <p class="text-sm text-[var(--color-text-muted)]">Mix + price + emissions in a single HTTP round-trip via <code class="font-mono text-[var(--color-accent-primary)]">/combined</code> — the natural unit for an agent making a carbon-aware load-shift decision.</p>
       </div>
     </div>
   </section>
