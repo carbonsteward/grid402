@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import LiveMap from "../components/LiveMap";
+import WorldMap from "../components/WorldMap";
 ---
 <Layout>
   <section class="max-w-6xl mx-auto px-6 pt-16 pb-12">
@@ -29,12 +29,12 @@ import LiveMap from "../components/LiveMap";
     </div>
   </section>
 
-  <section class="max-w-6xl mx-auto px-6 pb-16">
+  <section class="max-w-7xl mx-auto px-6 pb-16">
     <div class="mb-4 flex items-baseline justify-between">
-      <h2 class="text-2xl font-semibold">Live carbon intensity — 4 ISOs</h2>
-      <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">v1 · CAISO · ERCOT · KPX · AEMO</span>
+      <h2 class="text-2xl font-semibold">Live carbon intensity</h2>
+      <span class="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">USA · UK · KOREA · AUSTRALIA</span>
     </div>
-    <LiveMap client:load />
+    <WorldMap client:load />
   </section>
 
   <section class="max-w-6xl mx-auto px-6 pb-24">

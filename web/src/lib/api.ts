@@ -9,7 +9,7 @@ export const API_BASE =
     ? "http://localhost:3402"
     : "/api");
 
-export type ISO = "CAISO" | "ERCOT" | "AEMO" | "KPX";
+export type ISO = "CAISO" | "ERCOT" | "AEMO" | "KPX" | "GB";
 
 export type MixSnapshot = {
   iso: ISO;
@@ -19,6 +19,7 @@ export type MixSnapshot = {
   pct: Record<string, number>;
   ci_g_per_kwh: number; // carbon intensity, gCO2eq/kWh
   source_url?: string;
+  source: "live" | "estimate";
 };
 
 export type SpotSnapshot = {

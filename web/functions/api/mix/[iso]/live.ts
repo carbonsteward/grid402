@@ -1,8 +1,8 @@
 // Pages Function: GET /api/mix/{ISO}/live
 //
-// Free-tier demo endpoint. Tries upstream CAISO/ERCOT live feeds first;
-// falls back to ISO-shaped realistic estimates if upstream blocks.
-// The full x402-gated production API runs separately.
+// Free-tier demo endpoint. Tries upstream live feeds first; falls back to
+// ISO-shaped realistic estimates if upstream blocks. The full x402-gated
+// production API runs separately.
 
 interface Env {
   KPX_OPENAPI_KEY?: string;
@@ -25,7 +25,7 @@ const CI: Record<string, number> = {
   battery: 0, imports: 380, oil: 720, coal: 820, gas: 490, other: 400,
 };
 
-const UA = "Mozilla/5.0 (compatible; Grid402/0.1; +https://grid402.climatebrain.xyz)";
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15";
 
 function pctFromGenMW(genMW: Record<string, number>): Record<string, number> {
   const total = Object.values(genMW).reduce((s, v) => s + Math.max(v, 0), 0) || 1;
@@ -92,8 +92,17 @@ async function tryCAISO(): Promise<Mix> {
 }
 
 async function tryERCOT(): Promise<Mix> {
+  // ERCOT blocks CF IPs on the dashboard JSON; try with full browser-like headers + referer.
   const res = await fetch("https://www.ercot.com/api/1/services/read/dashboards/fuel-mix.json", {
-    headers: { "User-Agent": UA, "Accept": "application/json" },
+    headers: {
+      "User-Agent": UA,
+      "Accept": "application/json, text/plain, */*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Referer": "https://www.ercot.com/gridmktinfo/dashboards/gridconditions/fuelmix",
+      "Origin": "https://www.ercot.com",
+      "Sec-Fetch-Site": "same-origin",
+      "Sec-Fetch-Mode": "cors",
+    },
   });
   if (!res.ok) throw new Error(`ERCOT ${res.status}`);
   const data = (await res.json()) as any;
@@ -117,6 +126,49 @@ async function tryERCOT(): Promise<Mix> {
     src: "https://www.ercot.com/gridmktinfo/dashboards/gridconditions/fuelmix",
     source: "live",
   });
+}
+
+async function tryGB(): Promise<Mix> {
+  // National Energy System Operator (NESO) Carbon Intensity API — public, no key.
+  // /generation gives the current GB generation mix in percentages.
+  const res = await fetch("https://api.carbonintensity.org.uk/generation", {
+    headers: { "User-Agent": UA, "Accept": "application/json" },
+  });
+  if (!res.ok) throw new Error(`GB ${res.status}`);
+  const j = (await res.json()) as any;
+  const data = j?.data?.generationmix ?? [];
+  if (!Array.isArray(data) || !data.length) throw new Error("GB empty");
+  // Normalize fuel names → our canonical set.
+  const fuelMap: Record<string, string> = {
+    biomass: "biomass", coal: "coal", imports: "imports", gas: "gas",
+    nuclear: "nuclear", other: "other", hydro: "hydro", solar: "solar",
+    wind: "wind",
+  };
+  // GB API returns percentages; assume an indicative 30 GW current load to derive MW.
+  const totalMW = 30000;
+  const genMW: Record<string, number> = {};
+  for (const row of data) {
+    const fuel = fuelMap[row.fuel] ?? "other";
+    genMW[fuel] = (genMW[fuel] ?? 0) + (Number(row.perc) / 100) * totalMW;
+  }
+  // Pull intensity from a separate call so the displayed CI matches NESO.
+  let ci: number | undefined;
+  try {
+    const r2 = await fetch("https://api.carbonintensity.org.uk/intensity", {
+      headers: { "User-Agent": UA, "Accept": "application/json" },
+    });
+    if (r2.ok) {
+      const j2 = (await r2.json()) as any;
+      ci = Number(j2?.data?.[0]?.intensity?.actual);
+    }
+  } catch {}
+  const mix = shape("GB", genMW, {
+    ts: j?.data?.from ?? new Date().toISOString(),
+    src: "https://api.carbonintensity.org.uk/",
+    source: "live",
+  });
+  if (Number.isFinite(ci)) mix.ci_g_per_kwh = ci as number;
+  return mix;
 }
 
 // ---------- Time-aware estimates -----------------------------------------
@@ -193,6 +245,23 @@ function estimateKPX(): Mix {
   return shape("KPX", genMW, { zone: "KR", src: "https://www.kpx.or.kr", source: "estimate" });
 }
 
+function estimateGB(): Mix {
+  const t = new Date();
+  const hUK = t.getUTCHours();
+  const sun = hUK >= 6 && hUK <= 19 ? Math.sin(((hUK - 6) / 13) * Math.PI) : 0;
+  const genMW = {
+    wind: noise(11000),
+    solar: noise(8500 * sun),
+    nuclear: noise(4800),
+    gas: noise(7500 + (1 - sun) * 3000),
+    biomass: noise(2300),
+    imports: noise(4200),
+    hydro: noise(800),
+    other: 200,
+  };
+  return shape("GB", genMW, { zone: "GB", src: "https://api.carbonintensity.org.uk/", source: "estimate" });
+}
+
 // ---------- Handler -------------------------------------------------------
 
 export const onRequestGet: PagesFunction<Env> = async ({ params }) => {
@@ -210,6 +279,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ params }) => {
     switch (iso) {
       case "CAISO": mix = await tryCAISO(); break;
       case "ERCOT": mix = await tryERCOT(); break;
+      case "GB":    mix = await tryGB(); break;
       case "AEMO":  mix = estimateAEMO(); break;
       case "KPX":   mix = estimateKPX(); break;
       default:
@@ -220,6 +290,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ params }) => {
     switch (iso) {
       case "CAISO": mix = estimateCAISO(); break;
       case "ERCOT": mix = estimateERCOT(); break;
+      case "GB":    mix = estimateGB(); break;
       case "AEMO":  mix = estimateAEMO(); break;
       case "KPX":   mix = estimateKPX(); break;
       default:
