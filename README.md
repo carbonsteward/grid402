@@ -103,7 +103,14 @@ See [CONCEPT_KR.md](./CONCEPT_KR.md) (Korean) for the full Layer 0 → 2 breakdo
 
 ## Status
 
-🚧 Pre-hackathon. CAISO live; AEMO/ERCOT/KPX spec'd. ENTSO-E next sprint.
+🟢 **MVP shipped: 4 ISOs × 4 endpoints = 16 paid routes.**
+- CAISO ✅ (5-min mix, OASIS + fuelsource.csv)
+- KPX ✅ (5-min via OpenAPI sumperfuel5m, hourly HTML fallback)
+- ERCOT ✅ (5-min mix via EM proxy, 8 fuels)
+- AEMO ✅ (5-min DUID-level via NEMWEB + OpenNEM registry)
+- ENTSO-E 🟡 (next sprint, token request in flight)
+
+TypeScript clean. `pnpm install && pnpm dev` runs.
 
 ## License
 
