@@ -448,6 +448,9 @@ export default function WorldMap() {
         isLive={isLive}
         history={history}
         timeline={timeline}
+        sliderPct={sliderPct}
+        stepMinutes={HISTORY_STEP}
+        onSliderChange={(pct, live) => { setSliderPct(pct); setIsLive(live); }}
         onCursorTs={(ts) => {
           if (timeline.length === 0) return;
           const start = timeline[0];
@@ -458,18 +461,6 @@ export default function WorldMap() {
         }}
         onClose={() => setSelected(null)}
       />
-
-      {/* Time slider as bottom overlay inside the map (Electricity-Maps pattern) */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-[rgba(11,18,32,0.95)] via-[rgba(11,18,32,0.85)] to-transparent pt-8 pb-3 px-3 sm:px-4">
-        <TimeSlider
-          timeline={timeline}
-          sliderPct={sliderPct}
-          isLive={isLive}
-          displayedTs={displayedTs}
-          onChange={(pct, live) => { setSliderPct(pct); setIsLive(live); }}
-          stepMinutes={HISTORY_STEP}
-        />
-      </div>
     </div>
   );
 }
@@ -560,7 +551,7 @@ function TimeSlider({
 }
 
 function DetailPanel({
-  countryId, countryName, mapping, currentByIso, spot, errors, displayedTs, isLive, history, timeline, onCursorTs, onClose,
+  countryId, countryName, mapping, currentByIso, spot, errors, displayedTs, isLive, history, timeline, sliderPct, stepMinutes, onSliderChange, onCursorTs, onClose,
 }: {
   countryId: string | null;
   countryName: string | undefined;
@@ -572,6 +563,9 @@ function DetailPanel({
   isLive: boolean;
   history: Partial<Record<ISO, HistoricalSeries>>;
   timeline: number[];
+  sliderPct: number;
+  stepMinutes: number;
+  onSliderChange: (pct: number, live: boolean) => void;
   onCursorTs: (ts: number) => void;
   onClose: () => void;
 }) {
@@ -639,7 +633,7 @@ function DetailPanel({
   };
 
   return (
-    <div className="absolute top-3 left-3 bottom-[120px] w-[400px] max-w-[calc(100%-1.5rem)] rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(11,18,32,0.92)] backdrop-blur-md shadow-2xl shadow-black/50 z-30 flex flex-col overflow-hidden animate-in slide-in-from-left">
+    <div className="absolute top-3 left-3 bottom-3 w-[400px] max-w-[calc(100%-1.5rem)] rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(11,18,32,0.92)] backdrop-blur-md shadow-2xl shadow-black/50 z-30 flex flex-col overflow-hidden animate-in slide-in-from-left">
       <div className="px-5 pt-4 pb-3 border-b border-[var(--color-grid-stroke)]">
         <button
           onClick={onClose}
@@ -663,6 +657,18 @@ function DetailPanel({
         <p className="text-[10px] text-[var(--color-text-muted)] font-mono mt-1">
           {new Date(displayedTs).toUTCString().slice(5, 22)} UTC
         </p>
+      </div>
+
+      {/* Time slider — lives inside the panel header, below the country title */}
+      <div className="px-4 py-2.5 border-b border-[var(--color-grid-stroke)] bg-[rgba(11,18,32,0.5)]">
+        <TimeSlider
+          timeline={timeline}
+          sliderPct={sliderPct}
+          isLive={isLive}
+          displayedTs={displayedTs}
+          onChange={onSliderChange}
+          stepMinutes={stepMinutes}
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">

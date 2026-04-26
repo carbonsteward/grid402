@@ -58,3 +58,12 @@ html, body {
 .animate-in.slide-in-from-left {
   animation: slide-in-from-left 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+@keyframes pulse-dot {
+  0%   { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(78, 205, 196, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); }
+}
+.anim-pulse-dot {
+  animation: pulse-dot 1.6s ease-out infinite;
+}

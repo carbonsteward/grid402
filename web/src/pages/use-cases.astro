@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import UseCaseEnrichment from "../components/UseCaseEnrichment";
 ---
 <Layout title="Use cases · Grid402" description="Agent scenarios for sub-hourly grid mix, carbon intensity, and spot price — settled per call in USDC on Base.">
   <section class="max-w-6xl mx-auto px-6 pt-12 pb-8">
@@ -15,6 +16,31 @@ import Layout from "../layouts/Layout.astro";
       can't see the 22-minute windows where it matters. Each maps to one or more of the three signals we sell:
       generation mix, carbon intensity, and spot price.
     </p>
+  </section>
+
+  {/* Narrative arc — frames the four cards as scenes in an agent's day */}
+  <section class="max-w-6xl mx-auto px-6 pb-6">
+    <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.04)] p-5">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-3">An agent's day, by the call</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div class="rounded-md border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] px-3 py-2">
+          <div class="text-[9px] uppercase tracking-[0.15em] text-[var(--color-accent-primary)] font-mono mb-1">Morning</div>
+          <span class="text-[var(--color-text-muted)] leading-snug">Korea wakes up. Solar ramps. Inference scheduler defers a batch.</span>
+        </div>
+        <div class="rounded-md border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] px-3 py-2">
+          <div class="text-[9px] uppercase tracking-[0.15em] text-[var(--color-accent-warm)] font-mono mb-1">Afternoon</div>
+          <span class="text-[var(--color-text-muted)] leading-snug">Texas wind picks up. GPU router checkpoints to ERCOT.</span>
+        </div>
+        <div class="rounded-md border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] px-3 py-2">
+          <div class="text-[9px] uppercase tracking-[0.15em] text-[var(--color-accent-light)] font-mono mb-1">Dusk</div>
+          <span class="text-[var(--color-text-muted)] leading-snug">California demand spikes. EV fleet picks the clean+cheap charger.</span>
+        </div>
+        <div class="rounded-md border border-[var(--color-grid-stroke)] bg-[rgba(255,255,255,0.02)] px-3 py-2">
+          <div class="text-[9px] uppercase tracking-[0.15em] text-[var(--color-accent-hot)] font-mono mb-1">Night</div>
+          <span class="text-[var(--color-text-muted)] leading-snug">CBAM auditor reads the receipts.</span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="max-w-6xl mx-auto px-6 pb-12">
@@ -43,15 +69,12 @@ import Layout from "../layouts/Layout.astro";
           <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">when to run</span>
         </div>
         <h3 class="font-bold text-xl mb-2">Inference scheduler</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-3">
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">
           The agent calls <code class="font-mono text-xs text-[var(--color-accent-primary)]">/mix/KPX/live</code> every 5 min, sees CI
           falling from 450 → 312 gCO₂/kWh as solar ramps up, and defers a non-urgent batch by 22 min.
           A 30% emissions cut on the same workload — invisible to any annual-average API.
         </p>
-        <p class="text-xs font-mono text-[var(--color-text-muted)] bg-[rgba(11,18,32,0.6)] border border-[var(--color-grid-stroke)] rounded p-3">
-          GET /api/mix/KPX/live<br/>
-          → {`{ ci_g_per_kwh: 312, mix: { solar: 0.34, ... } }`}
-        </p>
+        <UseCaseEnrichment client:idle variant="ci" primaryIso="KPX" primaryLabel="KPX" />
       </div>
 
       <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,208,102,0.03)] p-6">
@@ -74,16 +97,13 @@ import Layout from "../layouts/Layout.astro";
           <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">where to run</span>
         </div>
         <h3 class="font-bold text-xl mb-2">GPU workload router</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-3">
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">
           Training jobs hit <code class="font-mono text-xs text-[var(--color-accent-warm)]">/spot/ERCOT/HB_NORTH</code>
           and <code class="font-mono text-xs text-[var(--color-accent-warm)]">/spot/CAISO/TH_NP15</code>, see ERCOT at $18/MWh
           vs CAISO at $94/MWh, and route the next checkpoint to a Texas region. Per-call arbitrage on wholesale
           electricity, not retail tariffs.
         </p>
-        <p class="text-xs font-mono text-[var(--color-text-muted)] bg-[rgba(11,18,32,0.6)] border border-[var(--color-grid-stroke)] rounded p-3">
-          GET /api/spot/ERCOT/HB_NORTH/live<br/>
-          → {`{ price_usd_per_mwh: 18.42, currency: "USD" }`}
-        </p>
+        <UseCaseEnrichment client:idle variant="spot-pair" primaryIso="CAISO" primaryLabel="CAISO" zoneA={{ iso: "ERCOT", zone: "HB_NORTH", label: "ERCOT-N" }} zoneB={{ iso: "CAISO", zone: "TH_NP15", label: "CAISO-NP15" }} />
       </div>
 
       <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(78,205,196,0.04)] p-6">
@@ -118,16 +138,13 @@ import Layout from "../layouts/Layout.astro";
           <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">when + where</span>
         </div>
         <h3 class="font-bold text-xl mb-2">EV / Tesla charging agent</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-3">
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">
           Two Superchargers, 3 km apart. The agent sees one is on 70% solar at 11:00 (CI 142, $32/MWh),
           the other on 60% gas at 18:00 demand-peak (CI 480, $210/MWh). It picks the clean+cheap one. Per-charge:
           cleaner kWh, lower cost, and a receipt that proves both — useful for fleet ESG reports and
           retail-grade carbon claims.
         </p>
-        <p class="text-xs font-mono text-[var(--color-text-muted)] bg-[rgba(11,18,32,0.6)] border border-[var(--color-grid-stroke)] rounded p-3">
-          GET /api/mix/CAISO/live + /api/spot/CAISO/TH_SP15/live<br/>
-          → choose Supercharger A (low CI, low LMP)
-        </p>
+        <UseCaseEnrichment client:idle variant="ev" primaryIso="CAISO" primaryLabel="CAISO" evSpot={{ iso: "CAISO", zone: "TH_SP15" }} />
       </div>
 
       <div class="rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(255,107,53,0.03)] p-6">
@@ -151,15 +168,12 @@ import Layout from "../layouts/Layout.astro";
           <span class="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">audit / proof</span>
         </div>
         <h3 class="font-bold text-xl mb-2">24/7 CFE proof · DePIN slashing · CBAM</h3>
-        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-3">
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">
           Every Grid402 response is a signed receipt: which 5-min interval, which zone, what mix, what CI,
           what spot price. Use it to prove a workload ran on carbon-free electricity, slash DePIN nodes
           on dirty grids, or file hourly CBAM reports without a $50k consultant.
         </p>
-        <p class="text-xs font-mono text-[var(--color-text-muted)] bg-[rgba(11,18,32,0.6)] border border-[var(--color-grid-stroke)] rounded p-3">
-          GET /api/mix/{`{ISO}`}/at?ts=2026-04-25T14:30Z<br/>
-          → signed JSON receipt for that 5-min interval
-        </p>
+        <UseCaseEnrichment client:idle variant="cfe" primaryIso="GB" primaryLabel="NESO" />
       </div>
     </div>
   </section>
