@@ -1,0 +1,46 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Grid402 — Per-call grid receipts",
+    "version": "0.1.0",
+    "description": "Sub-hourly generation mix, self-computed carbon intensity, and wholesale spot price for CAISO, ERCOT, GB (NESO), KPX, and AEMO. Paid routes are gated by HTTP 402 and settle in USDC on Base via the x402 protocol.",
+    "license": {"name": "MIT", "identifier": "MIT"},
+    "contact": {"url": "https://grid402.climatebrain.xyz"}
+  },
+  "servers": [
+    {"url": "https://grid402.climatebrain.xyz/api", "description": "Free demo tier (rate-limited at edge)"},
+    {"url": "https://grid402-api-production.up.railway.app", "description": "x402-gated production tier (Railway)"}
+  ],
+  "tags": [
+    {"name": "mix", "description": "Generation breakdown + carbon intensity (PRIMARY)"},
+    {"name": "emissions", "description": "Self-computed gCO2/kWh (derived from mix)"},
+    {"name": "spot", "description": "Wholesale clearing price per zone (bundled)"},
+    {"name": "combined", "description": "All three signals in one HTTP round-trip"},
+    {"name": "free", "description": "Unmetered routes (health, schema, info)"}
+  ],
+  "paths": {
+    "/": {"get": {"tags": ["free"], "summary": "Service info + endpoint catalog", "responses": {"200": {"description": "OK"}}}},
+    "/health": {"get": {"tags": ["free"], "summary": "Liveness probe", "responses": {"200": {"description": "{ ok: true, ts }"}}}},
+    "/schema/{iso}": {"get": {"tags": ["free"], "summary": "JSON schema for an ISO's response", "parameters": [{"name": "iso", "in": "path", "required": true, "schema": {"type": "string", "enum": ["CAISO", "ERCOT", "GB", "KPX", "AEMO"]}}], "responses": {"200": {"description": "JSON Schema"}}}},
+    "/mix/{iso}/live": {"get": {"tags": ["mix"], "summary": "Live generation mix + computed carbon intensity", "x-price-usdc": "0.005", "parameters": [{"name": "iso", "in": "path", "required": true, "schema": {"type": "string", "enum": ["CAISO", "ERCOT", "GB", "KPX"]}}], "responses": {"402": {"description": "Payment Required (x402 challenge)"}, "200": {"description": "Mix + CI payload"}}}},
+    "/mix/AEMO/live": {"get": {"tags": ["mix"], "summary": "Live AEMO mix (per NEM region)", "x-price-usdc": "0.005", "parameters": [{"name": "region", "in": "query", "required": true, "schema": {"type": "string", "enum": ["NSW1", "QLD1", "SA1", "TAS1", "VIC1"]}}], "responses": {"402": {"description": "Payment Required"}, "200": {"description": "Mix + CI payload"}}}},
+    "/mix/{iso}/history": {"get": {"tags": ["mix"], "summary": "Time-series mix (history)", "parameters": [{"name": "iso", "in": "path", "required": true, "schema": {"type": "string"}}, {"name": "hours", "in": "query", "schema": {"type": "integer", "default": 24}}, {"name": "step", "in": "query", "schema": {"type": "integer", "default": 30, "description": "minutes per slot"}}], "responses": {"402": {"description": "Payment Required"}, "200": {"description": "{ iso, source, step_minutes, series: [...] }"}}}},
+    "/emissions/{iso}/live": {"get": {"tags": ["emissions"], "summary": "Self-computed gCO2/kWh from mix x IPCC AR6 factors", "x-price-usdc": "0.010", "parameters": [{"name": "iso", "in": "path", "required": true, "schema": {"type": "string", "enum": ["CAISO", "ERCOT", "GB", "KPX", "AEMO"]}}], "responses": {"402": {"description": "Payment Required"}, "200": {"description": "{ ci_g_per_kwh, factor_source, method: 'self_computed' }"}}}},
+    "/spot/{iso}/{zone}/live": {"get": {"tags": ["spot"], "summary": "Wholesale clearing price per zone", "x-price-usdc": "0.005", "parameters": [{"name": "iso", "in": "path", "required": true, "schema": {"type": "string"}}, {"name": "zone", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"402": {"description": "Payment Required"}, "200": {"description": "{ price_usd_per_mwh, price_native_per_mwh, currency, fx_rate }"}}}},
+    "/combined/{iso}/{zone}/live": {"get": {"tags": ["combined"], "summary": "Mix + emissions + spot in a single round-trip", "x-price-usdc": "0.015", "parameters": [{"name": "iso", "in": "path", "required": true, "schema": {"type": "string"}}, {"name": "zone", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"402": {"description": "Payment Required"}, "200": {"description": "Combined payload"}}}}
+  },
+  "components": {
+    "securitySchemes": {
+      "x402": {
+        "type": "http",
+        "scheme": "x402",
+        "description": "EIP-3009 transferWithAuthorization signature over USDC on Base. See https://x402.org for protocol spec."
+      }
+    }
+  },
+  "x-payment-protocol": {
+    "name": "x402",
+    "url": "https://x402.org",
+    "settlement": {"token": "USDC", "chain": "Base"}
+  }
+}

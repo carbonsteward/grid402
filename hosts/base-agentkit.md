@@ -8,7 +8,7 @@
   - 문서: https://docs.cdp.coinbase.com/agentkit/docs/welcome
   - npm: `@coinbase/agentkit`, `@coinbase/agentkit-langchain` 등
 - **현재 버전**: `@coinbase/agentkit@^0.8.x`
-- **저장소 활동**: ⭐1,209, 2026-04-24 기준 활발히 업데이트
+- **저장소 활동**: 1,209, 2026-04-24 기준 활발히 업데이트
 
 ## 2. Grid402 내 역할
 - **Layer**: **Body** (에이전트의 행동 레이어) + **Wallet** (온체인 지갑 바인딩)
@@ -85,8 +85,8 @@ const agentkit = await AgentKit.from({
 - **등장 순간**: 5분 데모의 **30~120초 구간** (UC1 라이브 데모)
 - **대사**: *"Watch — I type 'what's the current CAISO NP15 price?' The agent hits Grid402, gets a 402, pays half a cent in USDC on Base Sepolia, and hands me back the cleared price."*
 - **증거 아티팩트**:
-  - 터미널 출력: `🤖 agent: The current NP15 price is $42.15/MWh...`
-  - 터미널 출력: `🔧 tool [make_http_request_with_x402]: {"data":{...},"payment":{"txHash":"0x..."}}`
+  - 터미널 출력: ` agent: The current NP15 price is $42.15/MWh...`
+  - 터미널 출력: ` tool [make_http_request_with_x402]: {"data":{...},"payment":{"txHash":"0x..."}}`
   - Basescan 링크 (brand new tx, 녹색 체크)
 - **저장 경로**: `.context/grid402/demo-evidence/base-agentkit-*`
 

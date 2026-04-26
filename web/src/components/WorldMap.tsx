@@ -390,8 +390,17 @@ export default function WorldMap() {
   const displayedTs = isLive ? (timeline[timeline.length - 1] ?? Date.now()) : (targetTs ?? Date.now());
 
   return (
-    <div className="relative rounded-xl overflow-hidden bg-[#0B1220] border border-[var(--color-grid-stroke)]">
-      <div ref={containerRef} className="h-[640px] w-full" />
+    <div
+      className="relative rounded-xl overflow-hidden bg-[#0B1220] border border-[var(--color-grid-stroke)]"
+      role="region"
+      aria-label="World map of live carbon intensity. Click a colored country (USA, Great Britain, South Korea, or Australia) to open a detail panel with mix, carbon intensity, and spot price. Use the bottom slider in the panel to scrub through the past 24 hours."
+    >
+      <div
+        ref={containerRef}
+        className="h-[640px] w-full"
+        role="application"
+        aria-label="Interactive world map. Use Tab to focus, then Enter on a country to open its detail panel."
+      />
 
       {/* Live indicator (top-left of map) */}
       <button

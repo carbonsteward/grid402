@@ -6,7 +6,18 @@ description: A curated catalog of the six skills an autonomous agent needs for p
 
 # Agent skill set for programmable demand response
 
-An autonomous agent that does per-call demand response on Base needs more than one API. Grid402 ships the timing/grid-receipts skill; five other skills exist already in adjacent infrastructure on or near Base. This page is the curated overview. The full canonical document — install patterns, code samples, contributing guide — lives at [`skills.md`](https://github.com/grid402/grid402/blob/main/skills.md) in the repo.
+<div class="not-prose rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.04)] p-5 my-6">
+  <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-2">Get the canonical document</p>
+  <p class="text-sm text-[var(--color-text-muted)] mb-3 leading-relaxed">
+    <code class="font-mono text-[var(--color-accent-warm)] bg-[rgba(255,255,255,0.05)] px-1 py-0.5 rounded">skills.md</code> is the source of truth — per-skill install patterns, code samples, redistribution notes, and contributing guide. MIT licensed; drop it into any agent repo.
+  </p>
+  <pre class="text-xs bg-[rgba(0,0,0,0.35)] border border-[var(--color-grid-stroke)] rounded px-3 py-2 overflow-x-auto"><code class="font-mono text-[var(--color-text-light)]">curl -O https://raw.githubusercontent.com/carbonsteward/grid402/main/skills.md</code></pre>
+  <p class="text-xs text-[var(--color-text-muted)] mt-3">
+    Or browse on <a href="https://github.com/carbonsteward/grid402/blob/main/skills.md" class="text-[var(--color-accent-mint)] underline">GitHub</a> · raw at <a href="https://raw.githubusercontent.com/carbonsteward/grid402/main/skills.md" class="text-[var(--color-accent-mint)] underline">raw.githubusercontent.com</a>
+  </p>
+</div>
+
+An autonomous agent that does per-call demand response on Base needs more than one API. Grid402 ships the timing/grid-receipts skill; five other skills exist already in adjacent infrastructure on or near Base. This page is the curated overview.
 
 ## The six skills
 
@@ -96,4 +107,4 @@ The full six-skill stack is the upper bound. Most production agents use three to
 
 ## Read the full document
 
-The repository copy at [`skills.md`](https://github.com/grid402/grid402/blob/main/skills.md) includes per-skill install patterns, complete call examples, redistribution notes for each provider, and contributing guidelines.
+The repository copy at [`skills.md`](https://github.com/carbonsteward/grid402/blob/main/skills.md) includes per-skill install patterns, complete call examples, redistribution notes for each provider, and contributing guidelines.

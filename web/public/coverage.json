@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "grid402-coverage",
+  "version": "1",
+  "last_updated": "2026-04-25",
+  "license": "MIT",
+  "homepage": "https://grid402.climatebrain.xyz/docs/isos",
+  "iso_terminology_note": "ISO here means Independent System Operator (the entity balancing supply and demand on a regional grid), not the International Organization for Standardization.",
+  "operators": [
+    {
+      "code": "CAISO",
+      "name": "California ISO",
+      "country": "US",
+      "region": "California",
+      "source": "OASIS reports + Today's Outlook (caiso.com)",
+      "mix_granularity_minutes": 5,
+      "spot_zones": ["TH_NP15", "TH_SP15", "TH_ZP26"],
+      "spot_index": "LMP",
+      "freshness_minutes": 3,
+      "notes": "CAISO publishes a live carbon-intensity overlay (CISO_CO2 series) which we cross-reference against IPCC-factor calculations.",
+      "endpoints": {
+        "mix": "/mix/CAISO/live",
+        "history": "/mix/CAISO/history",
+        "emissions": "/emissions/CAISO/live",
+        "spot": "/spot/CAISO/{zone}/live",
+        "combined": "/combined/CAISO/{zone}/live"
+      }
+    },
+    {
+      "code": "ERCOT",
+      "name": "Electric Reliability Council of Texas",
+      "country": "US",
+      "region": "Texas",
+      "source": "ERCOT public data feeds + 60-day disclosures",
+      "mix_granularity_minutes": 5,
+      "settlement_granularity_minutes": 15,
+      "spot_zones": ["HB_BUSAVG", "HB_HOUSTON", "HB_NORTH", "HB_WEST", "HB_SOUTH"],
+      "spot_index": "SPP",
+      "freshness_minutes": 5,
+      "notes": "Wind dominates; mix swings 60+ percentage points day-to-day."
+    },
+    {
+      "code": "GB",
+      "name": "National Energy System Operator",
+      "country": "GB",
+      "region": "Great Britain",
+      "source": "api.carbonintensity.org.uk",
+      "mix_granularity_minutes": 30,
+      "spot_zones": [],
+      "spot_index": null,
+      "freshness_minutes": 30,
+      "notes": "Truly key-free upstream. Returns both percentage mix and a published carbon intensity value (we use NESO's number directly when available). Wind-heavy, often under 150 gCO2/kWh. Spot via BMRS/Elexon coming in v2."
+    },
+    {
+      "code": "KPX",
+      "name": "Korea Power Exchange",
+      "country": "KR",
+      "region": "Korea",
+      "source": "data.go.kr proxy (organization B552115) — datasets 15113384 (mix) + 15131225 (SMP)",
+      "mix_granularity_minutes": 60,
+      "mix_fallback_minutes": 5,
+      "spot_zones": ["KOREA"],
+      "spot_index": "SMP",
+      "freshness_minutes": 45,
+      "notes": "KRW->USD conversion uses live ECB reference rate; raw KRW price preserved in price_krw_per_mwh. v2 API is hourly; v1 XML fallback offers 5-min."
+    },
+    {
+      "code": "AEMO",
+      "name": "Australian Energy Market Operator",
+      "country": "AU",
+      "region": "National Electricity Market",
+      "source": "AEMO Data Dashboard CSV feeds",
+      "mix_granularity_minutes": 5,
+      "spot_zones": ["NSW1", "QLD1", "SA1", "TAS1", "VIC1"],
+      "spot_index": "RRP",
+      "freshness_minutes": 5,
+      "notes": "Each NEM region dispatched independently with distinct CI profile (TAS1 hydro-clean, QLD1 coal-heavy). WEM (Western Australia) not yet covered."
+    }
+  ],
+  "coming_soon": [
+    {"code": "ENTSO-E", "scope": "27 EU countries", "blocker": "single token unlocks all"},
+    {"code": "NYISO", "scope": "New York", "blocker": "CSV feeds, no key"},
+    {"code": "PJM", "scope": "Mid-Atlantic / Midwest USA", "blocker": null},
+    {"code": "AEMO-LIVE", "scope": "switch from estimate to real upstream", "blocker": null}
+  ]
+}

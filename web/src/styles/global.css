@@ -67,3 +67,25 @@ html, body {
 .anim-pulse-dot {
   animation: pulse-dot 1.6s ease-out infinite;
 }
+
+/* MapLibre attribution: default near-black is unreadable on our dark basemap.
+   Force a legible muted-blue + readable hover, matching the app's text-muted token.
+   Fixes the a11y contrast bug flagged in the UX review. */
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib-inner {
+  background: rgba(11, 18, 32, 0.55) !important;
+  color: rgba(143, 163, 190, 0.85) !important;
+}
+.maplibregl-ctrl-attrib a,
+.maplibregl-ctrl-attrib-inner a {
+  color: rgba(170, 195, 220, 0.85) !important;
+  text-decoration: none;
+}
+.maplibregl-ctrl-attrib a:hover,
+.maplibregl-ctrl-attrib-inner a:hover {
+  color: var(--color-accent-mint) !important;
+  text-decoration: underline;
+}
+.maplibregl-ctrl-attrib-button {
+  background-color: rgba(143, 163, 190, 0.15) !important;
+}

@@ -6,7 +6,7 @@
 
 Per-call grid receipts (5-min mix + carbon intensity + spot price) for autonomous compute — **programmable demand response**, settled on-chain in USDC on Base via the [x402](https://x402.org) protocol. Time your agents. Route your GPU workloads.
 
-[**🌐 Live demo →**](https://grid402.climatebrain.xyz) &nbsp;·&nbsp; [Use cases](https://grid402.climatebrain.xyz/use-cases) &nbsp;·&nbsp; [Docs](https://grid402.climatebrain.xyz/docs) &nbsp;·&nbsp; [How x402 works](https://grid402.climatebrain.xyz/docs/x402) &nbsp;·&nbsp; [Endpoints](https://grid402.climatebrain.xyz/docs/endpoints)
+[**Live demo →**](https://grid402.climatebrain.xyz) &nbsp;·&nbsp; [Use cases](https://grid402.climatebrain.xyz/use-cases) &nbsp;·&nbsp; [Docs](https://grid402.climatebrain.xyz/docs) &nbsp;·&nbsp; [Skills](./skills.md) &nbsp;·&nbsp; [How x402 works](https://grid402.climatebrain.xyz/docs/x402) &nbsp;·&nbsp; [Endpoints](https://grid402.climatebrain.xyz/docs/endpoints)
 
 ![Grid402 live map](docs/hero.png)
 
@@ -138,6 +138,23 @@ The honest version of the timing oracle includes **stochastic distribution acros
 
 ![Anti-coordination: without jitter, all 10K agents converge on 18:00 UTC and create the spike — self-defeating oracle. With stochastic jitter, dispatch spreads across a 4-hour window — load smooths, forecast holds.](docs/anti-coordination.png)
 
+## Grid402 is one skill of six — the agent skill set
+
+An agent that does programmable demand response autonomously needs more than one API. Grid402 ships the timing/grid skill; five other skills exist already in adjacent infrastructure on or near Base. The full set:
+
+| # | Skill | Provider | What the agent gets |
+|---|---|---|---|
+| 1 | Grid receipts (timing and routing) | **Grid402** | per-call mix, emissions, spot for any supported ISO region |
+| 2 | Wallet and payment | **Coinbase CDP Server Wallet** | EIP-3009 signing, USDC custody, gasless transfers |
+| 3 | Reasoning | **FLock** (or any OpenAI-compatible LLM) | LLM inference per token |
+| 4 | Self-observation | **Nansen** | own wallet history, peer labels, payee traction |
+| 5 | Context (web and social) | **Selanet** | scrape Twitter / Xiaohongshu / YouTube / LinkedIn / free-form URLs |
+| 6 | Discovery | **Coinbase AgentKit + x402 Bazaar** | `discover_x402_services` to auto-find paid endpoints by keyword |
+
+An agent wired with all six is fully autonomous: it decides when and where to run, pays for its own data, reasons about results, observes its own treasury, gathers unstructured context, and discovers new skills as the ecosystem grows.
+
+Grid402's product position: **one skill of six, plus curation of the catalog**. The shareable catalog with install patterns and per-skill call examples lives at [`skills.md`](./skills.md) — that document is what we send to LLM providers, agent platforms, and tool operators when explaining where Grid402 sits in their stack.
+
 ## What's possible with sub-hourly grid data
 
 What we ship in MVP is the four aggregation primitives (`/mix`, `/emissions`, `/spot`, `/combined`). What that primitive *enables* is six product categories — the headline applications run on top of these primitives in V2/V3, not yet:
@@ -146,12 +163,12 @@ What we ship in MVP is the four aggregation primitives (`/mix`, `/emissions`, `/
 
 | Category | What you build | Endpoints |
 |---|---|---|
-| **⏱ Timing decisions** (V2) | AI agent inference, ML training schedulers, batch RAG indexing, EV fleet charging | `/run-now` · `/cleanest-window` *(V2 — today, build with `/combined` and rank client-side)* |
-| **🧭 Routing decisions** (V2) | DePIN GPU operator selection (Akash, io.net), multi-region cloud placement, crypto mining location, EigenLayer AVS slashing | `/best-region-now` *(V2 — today, call `/emissions` per candidate zone and pick lowest)* |
-| **🔮 Predictions** (V1+V3) | Grid-price prediction markets, hourly carbon-intensity oracles, energy futures settlement. **Unlike weather, ISO data is canonical — no dispute.** | `/historical` *(V1)* · `/spot` *(✅ live)* · `/attestation` *(V3)* |
-| **📋 Compliance & reporting** | CBAM hourly emissions, IRA 45V hydrogen tax credit, EU RFNBO renewable verification, 24/7 CFE matching proofs | `/emissions` *(✅ live)* · `/attestation` *(V3)* |
-| **💱 Trading & quant** (V1) | Algorithmic arbitrage (LMP/SMP/RRP), multi-grid backtesting, carbon-credit market settlement, energy hedge fund infrastructure | `/historical` *(V1)* · `/dayahead` *(V1)* · WS *(V2)* |
-| **🤖 Agent self-knowledge** (V2, symbolic) | Per-session CO₂ receipts, token-level emissions metering, agent reputation systems. Below noise floor — narrative, not impact. | `/footprint` · `/whereami` *(V2)* |
+| **Timing decisions** (V2) | AI agent inference, ML training schedulers, batch RAG indexing, EV fleet charging | `/run-now` · `/cleanest-window` *(V2 — today, build with `/combined` and rank client-side)* |
+| **Routing decisions** (V2) | DePIN GPU operator selection (Akash, io.net), multi-region cloud placement, crypto mining location, EigenLayer AVS slashing | `/best-region-now` *(V2 — today, call `/emissions` per candidate zone and pick lowest)* |
+| **Predictions** (V1+V3) | Grid-price prediction markets, hourly carbon-intensity oracles, energy futures settlement. **Unlike weather, ISO data is canonical — no dispute.** | `/historical` *(V1)* · `/spot` *(live)* · `/attestation` *(V3)* |
+| **Compliance & reporting** | CBAM hourly emissions, IRA 45V hydrogen tax credit, EU RFNBO renewable verification, 24/7 CFE matching proofs | `/emissions` *(live)* · `/attestation` *(V3)* |
+| **Trading & quant** (V1) | Algorithmic arbitrage (LMP/SMP/RRP), multi-grid backtesting, carbon-credit market settlement, energy hedge fund infrastructure | `/historical` *(V1)* · `/dayahead` *(V1)* · WS *(V2)* |
+| **Agent self-knowledge** (V2, symbolic) | Per-session CO₂ receipts, token-level emissions metering, agent reputation systems. Below noise floor — narrative, not impact. | `/footprint` · `/whereami` *(V2)* |
 
 > **Why grid data is different from weather oracles:** ISO settlement is canonical. Each 5-minute interval is dispatched, cleared, and published by CAISO/ERCOT/NESO/KPX/AEMO — there's a single number, no dispute, no model disagreement. Weather oracles fight over which feed wins. Grid oracles don't.
 
@@ -161,20 +178,20 @@ What we ship in MVP is the four aggregation primitives (`/mix`, `/emissions`, `/
 
 | Endpoint | Status | Notes |
 |---|---|---|
-| `GET /mix/<iso>/live` | ✅ **live (MVP)** | 5-min generation mix per ISO |
-| `GET /emissions/<iso>/live` | ✅ **live (MVP)** | Self-computed gCO₂/kWh from mix × IPCC AR6 |
-| `GET /spot/<iso>/<zone>/live` | ✅ **live (MVP)** | Wholesale clearing price (LMP / SMP / RRP) |
-| `GET /combined/<iso>/<zone>/live` | ✅ **live (MVP)** | Mix + emissions + spot in one round-trip |
-| `GET /historical/<iso>/<zone>` | 🟡 V1 | Bulk Parquet/CSV (backtest fuel) |
-| `GET /dayahead/<iso>/<zone>` | 🟡 V1 | Hourly DAM (ENTSO-E) |
-| `WS /stream/<iso>/<zone>` | 🟡 V2 | WebSocket tick subscription |
-| `GET /cleanest-window/<region>?h=N` | 🟡 V2 | Decision: optimal N-hour block in next 24h |
-| `GET /run-now/<region>?max_gco2=N` | 🟡 V2 | Decision: now / wait_until |
-| `GET /best-region-now?candidates=…` | 🟡 V2 | Decision: green-routing across regions |
-| `GET /carbon-budget/<session_id>` | 🟡 V2 | Cumulative gCO₂ for an agent run |
-| `GET /whereami` | 🟡 V2 (free) | Agent's serving region |
-| `GET /footprint/session` | 🟡 V2 | Per-session Wh + gCO₂ estimate |
-| `GET /attestation/<tx_hash>` | 🔴 V3 | EIP-712 signed on-chain proof |
+| `GET /mix/<iso>/live` | **live (MVP)** | 5-min generation mix per ISO |
+| `GET /emissions/<iso>/live` | **live (MVP)** | Self-computed gCO₂/kWh from mix × IPCC AR6 |
+| `GET /spot/<iso>/<zone>/live` | **live (MVP)** | Wholesale clearing price (LMP / SMP / RRP) |
+| `GET /combined/<iso>/<zone>/live` | **live (MVP)** | Mix + emissions + spot in one round-trip |
+| `GET /historical/<iso>/<zone>` | [V1] | Bulk Parquet/CSV (backtest fuel) |
+| `GET /dayahead/<iso>/<zone>` | [V1] | Hourly DAM (ENTSO-E) |
+| `WS /stream/<iso>/<zone>` | [V2] | WebSocket tick subscription |
+| `GET /cleanest-window/<region>?h=N` | [V2] | Decision: optimal N-hour block in next 24h |
+| `GET /run-now/<region>?max_gco2=N` | [V2] | Decision: now / wait_until |
+| `GET /best-region-now?candidates=…` | [V2] | Decision: green-routing across regions |
+| `GET /carbon-budget/<session_id>` | [V2] | Cumulative gCO₂ for an agent run |
+| `GET /whereami` | [V2] (free) | Agent's serving region |
+| `GET /footprint/session` | [V2] | Per-session Wh + gCO₂ estimate |
+| `GET /attestation/<tx_hash>` | [V3] | EIP-712 signed on-chain proof |
 
 → Today an agent that wants a "cleanest 4-hour window" answer calls `/combined` over a few candidate intervals and ranks client-side. V2 collapses that into one decision call.
 
@@ -182,11 +199,11 @@ What we ship in MVP is the four aggregation primitives (`/mix`, `/emissions`, `/
 
 | Region | ISO / Operator | Mix granularity | Status |
 |---|---|---|---|
-| 🇺🇸 California | **CAISO** | 5-min | ✅ live (Today's Outlook CSV) |
-| 🇬🇧 Great Britain | **NESO** | 30-min | ✅ live ([carbonintensity.org.uk](https://api.carbonintensity.org.uk/), no key needed) |
-| 🇺🇸 Texas | **ERCOT** | 5-min | ✅ live (Electricity Maps gzipped public proxy; CF egress IPs blocked direct dashboard JSON) |
-| 🇦🇺 Australia (NEM) | **AEMO** | 5-min, 5 sub-state regions | ✅ live (NEMWEB Dispatch_SCADA ZIP; 509-DUID fuel-mix registry; NSW1/QLD1/SA1/TAS1/VIC1 colored independently) |
-| 🇰🇷 South Korea | **KPX** | 5–60 min | 🟡 estimate (data.go.kr ServiceKey activation pending; realistic diurnal curve in interim) |
+| California (US) | **CAISO** | 5-min | live (Today's Outlook CSV) |
+| Great Britain (UK) | **NESO** | 30-min | live ([carbonintensity.org.uk](https://api.carbonintensity.org.uk/), no key needed) |
+| Texas (US) | **ERCOT** | 5-min | live (Electricity Maps gzipped public proxy; CF egress IPs blocked direct dashboard JSON) |
+| Australia (NEM) | **AEMO** | 5-min, 5 sub-state regions | live (NEMWEB Dispatch_SCADA ZIP; 509-DUID fuel-mix registry; NSW1/QLD1/SA1/TAS1/VIC1 colored independently) |
+| South Korea | **KPX** | 5–60 min | estimate (data.go.kr ServiceKey activation pending; realistic diurnal curve in interim) |
 
 **On the roadmap (V1):** ENTSO-E (27 EU countries with one token), NYISO, PJM, KPX real upstream.
 
@@ -348,7 +365,7 @@ The thread tying all of these together: **autonomous compute is becoming a count
 | **Pricing** | Subscription (€6k+/year per signal), API key | Pay per call (~$0.005), no key |
 | **Onboarding** | Email signup → dashboard → contract → key | Wallet signature only |
 | **Granularity** | Mostly hourly | **5-min sub-hourly** (the moat) |
-| **Spot prices** | ❌ | ✅ LMP / SMP / RRP per zone |
+| **Spot prices** | no | yes — LMP / SMP / RRP per zone |
 | **Settlement** | Server-side billing | On-chain USDC tx per call |
 | **Map UI** | Closed source | **Open source (MIT)**, this repo |
 
@@ -366,16 +383,16 @@ These are hard constraints, not nice-to-haves:
 
 ## Status
 
-- 🟢 Live web demo with MapLibre choropleth, AU sub-state regions, time slider as bottom overlay, slide-in detail panel
-- 🟢 4 of 5 ISOs on real upstream (CAISO, ERCOT, NESO, AEMO live; KPX still on diurnal estimate awaiting data.go.kr ServiceKey)
-- 🟢 24h history endpoint (`/api/mix/{ISO}/history`) for slider scrubbing + spot price endpoint (`/api/spot/{ISO}/{zone}/live`)
-- 🟢 MDX docs (Quickstart, Endpoints, x402 protocol, Grid operator coverage) + dedicated `/use-cases` page
-- 🟢 Production x402-gated API deployed on Railway (`grid402-api-production.up.railway.app`) — returns real `402 Payment Required` JSON on paid paths
-- 🟢 Pre-commit hook (gitleaks) + CI-ready repo
-- 🟢 Custom domain on Cloudflare DNS, end-to-end TLS via Google CA
-- 🟡 `api.grid402.climatebrain.xyz` TLS provisioning on Railway (CNAME pointed; cert pending)
-- 🔴 ENTSO-E (27 EU countries — token requested, awaiting activation)
-- 🔴 Real KPX upstream (data.go.kr key approval pending; ERCOT + AEMO completed)
+- [done] Live web demo with MapLibre choropleth, AU sub-state regions, time slider as bottom overlay, slide-in detail panel
+- [done] 4 of 5 ISOs on real upstream (CAISO, ERCOT, NESO, AEMO live; KPX still on diurnal estimate awaiting data.go.kr ServiceKey)
+- [done] 24h history endpoint (`/api/mix/{ISO}/history`) for slider scrubbing + spot price endpoint (`/api/spot/{ISO}/{zone}/live`)
+- [done] MDX docs (Quickstart, Endpoints, x402 protocol, Grid operator coverage) + dedicated `/use-cases` page
+- [done] Production x402-gated API deployed on Railway (`grid402-api-production.up.railway.app`) — returns real `402 Payment Required` JSON on paid paths
+- [done] Pre-commit hook (gitleaks) + CI-ready repo
+- [done] Custom domain on Cloudflare DNS, end-to-end TLS via Google CA
+- [in flight] `api.grid402.climatebrain.xyz` TLS provisioning on Railway (CNAME pointed; cert pending)
+- [pending] ENTSO-E (27 EU countries — token requested, awaiting activation)
+- [pending] Real KPX upstream (data.go.kr key approval pending; ERCOT + AEMO completed)
 
 ## Acknowledgements
 

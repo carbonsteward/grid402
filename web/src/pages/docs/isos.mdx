@@ -6,6 +6,17 @@ description: CAISO, ERCOT, NESO (GB), KPX, AEMO — granularity, freshness, sour
 
 # Grid operator coverage
 
+<div class="not-prose rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.04)] p-5 my-6">
+  <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-2">Coverage matrix as JSON</p>
+  <p class="text-sm text-[var(--color-text-muted)] mb-3 leading-relaxed">
+    Every ISO on this page — granularity, freshness, source URLs, spot zones, endpoint paths — as a single MIT-licensed JSON file. Pin it in your agent or build region-routing tables programmatically.
+  </p>
+  <pre class="text-xs bg-[rgba(0,0,0,0.35)] border border-[var(--color-grid-stroke)] rounded px-3 py-2 overflow-x-auto"><code class="font-mono text-[var(--color-text-light)]">curl -O https://grid402.climatebrain.xyz/coverage.json</code></pre>
+  <p class="text-xs text-[var(--color-text-muted)] mt-3">
+    <a href="/coverage.json" class="text-[var(--color-accent-mint)] underline">Download coverage.json</a>
+  </p>
+</div>
+
 > **"ISO" here means Independent System Operator** — the entity that balances supply and
 > demand on a regional electricity grid (CAISO, ERCOT, AEMO, etc.). It is **not** the
 > International Organization for Standardization. Throughout Grid402 docs and code, every

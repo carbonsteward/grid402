@@ -28,10 +28,10 @@ The **production** API (the one you pay for) returns `402 Payment Required` inst
 x402 challenge body listing the cost, recipient address, and network:
 
 ```bash
-curl -i https://api.grid402.xyz/mix/CAISO/live   # production URL, paid tier
+curl -i https://grid402-api-production.up.railway.app/mix/CAISO/live   # production URL, paid tier
 # => HTTP/1.1 402 Payment Required
 # => { "x402Version": 1,
-#      "accepts": [{ "scheme": "exact", "price": "$0.002",
+#      "accepts": [{ "scheme": "exact", "price": "$0.005",
 #                    "network": "eip155:8453", "payTo": "0x..." }],
 #      "error": "Payment required" }
 ```
@@ -81,14 +81,13 @@ console.log(`Solar share: ${data.pct.solar}%`);
 }
 ```
 
-Cost per call: **$0.002 USDC** for `/mix`. Pricing for other endpoints is in
-[Endpoints](/docs/endpoints).
+Cost per call: **$0.005 USDC** for `/mix` (and for `/spot`). `/emissions` is `$0.010`,
+`/combined` is `$0.015`. Full table in [Endpoints](/docs/endpoints).
 
 ## Want price too? Use `/combined`
 
 If your agent is making a decision (workload schedule, battery dispatch, EV charge timing)
-it usually wants mix + emissions + spot in one shot. The combined endpoint costs less than
-three separate calls:
+it usually wants mix + emissions + spot in one shot. The combined endpoint saves the round-trip:
 
 ```ts
 const res = await fetch402("https://api.grid402.xyz/combined/CAISO/TH_NP15/live");

@@ -40,7 +40,7 @@ pnpm dev
 You should see:
 
 ```
-⚡ Grid402 API listening on http://localhost:3402
+ Grid402 API listening on http://localhost:3402
    Network: eip155:84532
    PayTo:   0x...
    Facil:   https://x402.org/facilitator

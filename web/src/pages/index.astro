@@ -31,6 +31,9 @@ import ApiStatus from "../components/ApiStatus";
         <a href="/docs/endpoints" class="px-3.5 py-2 rounded-md border border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-mint)]">
           Endpoints
         </a>
+        <a href="/docs/skills" class="px-3.5 py-2 rounded-md border border-[var(--color-grid-stroke)] hover:border-[var(--color-accent-mint)]">
+          Skill set
+        </a>
       </div>
     </div>
   </section>
@@ -54,7 +57,7 @@ import ApiStatus from "../components/ApiStatus";
         <div>
           <p class="text-xs uppercase tracking-wider text-[var(--color-accent-primary)] font-semibold mb-1">Primary</p>
           <p class="font-bold text-base">5-min generation mix + carbon intensity</p>
-          <p class="text-sm text-[var(--color-text-muted)] mt-1">The moat. Electricity Maps gates this at €6k/year per signal. We sell it for ~$0.005 per call.</p>
+          <p class="text-sm text-[var(--color-text-muted)] mt-1">The moat. Electricity Maps gates this at €6k/year per signal. We sell it for $0.005 per call.</p>
         </div>
         <div>
           <p class="text-xs uppercase tracking-wider text-[var(--color-text-muted)] font-semibold mb-1">Bundled</p>
@@ -104,6 +107,9 @@ import ApiStatus from "../components/ApiStatus";
       <div class="rounded-lg border border-[var(--color-grid-stroke)] p-6">
         <h3 class="font-semibold text-lg mb-2">Built for timing</h3>
         <p class="text-sm text-[var(--color-text-muted)]">Agents call this aggregation to decide <em>when</em> their compute should run, <em>which region</em> to route GPU workloads to, and <em>which</em> 5-min interval is cleanest. We ship the input today; <code class="font-mono text-[var(--color-accent-primary)]">/combined</code> bundles mix + price + emissions in one round-trip. Decision endpoints (<code class="font-mono">/cleanest-window</code>, <code class="font-mono">/run-now</code>) ship in V2.</p>
+        <p class="text-xs text-[var(--color-text-muted)] mt-3 pt-3 border-t border-[var(--color-grid-stroke)]">
+          Grid402 is <a href="/docs/skills" class="text-[var(--color-accent-mint)] underline">one of six skills</a> an autonomous DR agent needs — wallet, reasoning, self-observation, web context, and discovery come from CDP, FLock, Nansen, Selanet, and AgentKit.
+        </p>
       </div>
     </div>
   </section>

@@ -2,9 +2,10 @@
 import Layout from "../../layouts/Layout.astro";
 const docs = [
   { slug: "quickstart", title: "Quickstart", desc: "Make your first paid call in 60 seconds — starts with /mix, the primary signal." },
-  { slug: "endpoints",  title: "Endpoints",  desc: "All routes — mix (primary), emissions (derived), spot price (bundled), combined." },
+  { slug: "endpoints",  title: "Endpoints",  desc: "All routes — mix (primary), emissions (derived), spot price (bundled), combined.", badge: "openapi.json" },
   { slug: "x402",       title: "x402 protocol", desc: "How HTTP 402 + USDC on Base settles each call." },
-  { slug: "isos",       title: "Grid operator coverage", desc: "CAISO, ERCOT, NESO (GB), KPX, AEMO — Independent System Operators (not the standards body). Granularity, freshness, source URLs." },
+  { slug: "isos",       title: "Grid operator coverage", desc: "CAISO, ERCOT, NESO (GB), KPX, AEMO — Independent System Operators (not the standards body). Granularity, freshness, source URLs.", badge: "coverage.json" },
+  { slug: "skills",     title: "Agent skill set",     desc: "Grid402 is one skill of six. The curated catalog of skills an autonomous agent needs for programmable demand response on Base.", badge: "skills.md · MIT" },
 ];
 ---
 <Layout title="Docs · Grid402">
@@ -32,7 +33,14 @@ const docs = [
     <div class="grid md:grid-cols-2 gap-3">
       {docs.map(d => (
         <a href={`/docs/${d.slug}`} class="block rounded-lg border border-[var(--color-grid-stroke)] p-5 hover:border-[var(--color-accent-mint)] transition-colors">
-          <h2 class="font-semibold text-lg mb-1">{d.title}</h2>
+          <div class="flex items-start justify-between gap-3 mb-1">
+            <h2 class="font-semibold text-lg">{d.title}</h2>
+            {d.badge && (
+              <span class="shrink-0 text-[10px] uppercase tracking-[0.15em] font-mono text-[var(--color-accent-mint)] bg-[rgba(0,188,188,0.08)] border border-[var(--color-grid-stroke)] rounded px-2 py-0.5">
+                {d.badge}
+              </span>
+            )}
+          </div>
           <p class="text-sm text-[var(--color-text-muted)]">{d.desc}</p>
         </a>
       ))}

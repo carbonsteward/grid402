@@ -6,6 +6,17 @@ description: Every Grid402 route — mix (primary), emissions, spot price, combi
 
 # Endpoints
 
+<div class="not-prose rounded-xl border border-[var(--color-grid-stroke)] bg-[rgba(0,188,188,0.04)] p-5 my-6">
+  <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--color-accent-primary)] font-semibold mb-2">Machine-readable spec</p>
+  <p class="text-sm text-[var(--color-text-muted)] mb-3 leading-relaxed">
+    Full route catalog as <code class="font-mono text-[var(--color-accent-warm)] bg-[rgba(255,255,255,0.05)] px-1 py-0.5 rounded">OpenAPI 3.1</code> — load into Postman, generate clients, or feed to an agent's discovery layer.
+  </p>
+  <pre class="text-xs bg-[rgba(0,0,0,0.35)] border border-[var(--color-grid-stroke)] rounded px-3 py-2 overflow-x-auto"><code class="font-mono text-[var(--color-text-light)]">curl -O https://grid402.climatebrain.xyz/openapi.json</code></pre>
+  <p class="text-xs text-[var(--color-text-muted)] mt-3">
+    <a href="/openapi.json" class="text-[var(--color-accent-mint)] underline">Download openapi.json</a>
+  </p>
+</div>
+
 Base URL: `https://grid402.climatebrain.xyz/api`
 
 All routes return JSON. Paid routes return `402` until x402-signed.
@@ -21,11 +32,11 @@ The crown-jewel signal. Sub-hourly fuel mix per ISO region, with self-computed g
 
 | Route | ISO | Granularity | Cost |
 |---|---|---|---|
-| `GET /mix/CAISO/live` | California, USA | 5 min | $0.002 |
-| `GET /mix/ERCOT/live` | Texas, USA | 5 min | $0.002 |
-| `GET /mix/GB/live`    | Great Britain (NESO) | 30 min | $0.002 |
-| `GET /mix/KPX/live`   | Korea | 5–60 min | $0.003 |
-| `GET /mix/AEMO/live?region=:r` | Australia (NEM) | 5 min | $0.002 |
+| `GET /mix/CAISO/live` | California, USA | 5 min | $0.005 |
+| `GET /mix/ERCOT/live` | Texas, USA | 5 min | $0.005 |
+| `GET /mix/GB/live`    | Great Britain (NESO) | 30 min | $0.005 |
+| `GET /mix/KPX/live`   | Korea | 5–60 min | $0.005 |
+| `GET /mix/AEMO/live?region=:r` | Australia (NEM) | 5 min | $0.005 |
 
 `:r` for AEMO is one of `NSW1`, `QLD1`, `SA1`, `TAS1`, `VIC1`. Each NEM region is dispatched
 independently and has a distinct CI profile (TAS1 is hydro-clean, QLD1 is coal-heavy).
@@ -42,13 +53,13 @@ Returns `{ iso, source, step_minutes, series: [{ ts, ci_g_per_kwh, generation_mw
 
 ## Emissions — self-computed gCO₂/kWh *(derived from mix)*
 
-| Route | Method |
-|---|---|
-| `GET /emissions/CAISO/live` | Σ (fuel\_MW × IPCC AR6 lifecycle factor) / total\_MW |
-| `GET /emissions/ERCOT/live` | same |
-| `GET /emissions/GB/live` | same (with NESO's published intensity as override when available) |
-| `GET /emissions/KPX/live`   | same |
-| `GET /emissions/AEMO/live?region=:r` | same |
+| Route | Method | Cost |
+|---|---|---|
+| `GET /emissions/CAISO/live` | Σ (fuel\_MW × IPCC AR6 lifecycle factor) / total\_MW | $0.010 |
+| `GET /emissions/ERCOT/live` | same | $0.010 |
+| `GET /emissions/GB/live` | same (with NESO's published intensity as override when available) | $0.010 |
+| `GET /emissions/KPX/live`   | same | $0.010 |
+| `GET /emissions/AEMO/live?region=:r` | same | $0.010 |
 
 Every response includes `factor_source` (URL to the IPCC AR6 WG3 Annex III table) and
 `method: "self_computed"` so auditors can trace the assumption. We do not redistribute
@@ -56,13 +67,13 @@ Electricity Maps' carbon-intensity numbers — every figure is independently der
 
 ## Spot price — wholesale clearing price *(bundled)*
 
-| Route | Currency | Granularity |
-|---|---|---|
-| `GET /spot/CAISO/:zone/live` | USD/MWh (LMP) | 5–15 min |
-| `GET /spot/ERCOT/:hub/live` | USD/MWh (LMP) | 5–15 min |
-| `GET /spot/GB/:zone/live` | GBP + USD/MWh | 30 min |
-| `GET /spot/KPX/:zone/live`   | KRW + USD/MWh (SMP) | hourly |
-| `GET /spot/AEMO/:region/live` | AUD + USD/MWh (RRP) | 5 min |
+| Route | Currency | Granularity | Cost |
+|---|---|---|---|
+| `GET /spot/CAISO/:zone/live` | USD/MWh (LMP) | 5–15 min | $0.005 |
+| `GET /spot/ERCOT/:hub/live` | USD/MWh (LMP) | 5–15 min | $0.005 |
+| `GET /spot/GB/:zone/live` | GBP + USD/MWh | 30 min | $0.005 |
+| `GET /spot/KPX/:zone/live`   | KRW + USD/MWh (SMP) | hourly | $0.005 |
+| `GET /spot/AEMO/:region/live` | AUD + USD/MWh (RRP) | 5 min | $0.005 |
 
 Native-currency price + USD-converted price both returned, with the FX rate cited.
 
@@ -70,13 +81,14 @@ Native-currency price + USD-converted price both returned, with the FX rate cite
 
 | Route | Cost |
 |---|---|
-| `GET /combined/CAISO/:zone/live` | $0.005 |
-| `GET /combined/ERCOT/:hub/live` | $0.005 |
-| `GET /combined/GB/:zone/live` | $0.005 |
-| `GET /combined/KPX/:zone/live`   | $0.006 |
-| `GET /combined/AEMO/:region/live` | $0.005 |
+| `GET /combined/CAISO/:zone/live` | $0.015 |
+| `GET /combined/ERCOT/:hub/live` | $0.015 |
+| `GET /combined/GB/:zone/live` | $0.015 |
+| `GET /combined/KPX/:zone/live`   | $0.015 |
+| `GET /combined/AEMO/:region/live` | $0.015 |
 
-One HTTP request → one USDC tx → mix + emissions + spot. Cheaper than three separate calls.
+One HTTP request → one USDC tx → mix + emissions + spot. Saves a round-trip; price equals the
+sum of the underlying signals (no bundling discount yet).
 Use this for dashboards, carbon-aware schedulers, and any agent that's making a *decision* per tick.
 
 ## Free routes (no payment)

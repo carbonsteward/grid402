@@ -14,7 +14,7 @@
 | 시간대 | **Central Prevailing Time (CPT = CST/CDT)** — JSON에 `-0500`/`-0600` 명시. DST 자동 적용됨 |
 | Grid402 엔드포인트 | `/spot/ERCOT/:zone/live` · `/mix/ERCOT/live` · `/emissions/ERCOT/live` · `/combined/ERCOT/:zone/live` |
 
-> ⚠️ **Sub-hourly mix bar**: ✅ ERCOT 통과. fuel-mix.json은 **진짜 5분 시스템-와이드 fuel breakdown** 8개 연료 (CAISO와 동급). 단 storage 별도, gas는 CC/CT 미분리.
+> **Sub-hourly mix bar**: ERCOT 통과. fuel-mix.json은 **진짜 5분 시스템-와이드 fuel breakdown** 8개 연료 (CAISO와 동급). 단 storage 별도, gas는 CC/CT 미분리.
 
 ## 2. 인증
 
@@ -289,7 +289,7 @@ curl -sSL -A "$UA" "${PROXY}/api/1/services/read/dashboards/rtsyscond.json?${HOS
 
 ## 9. 알려진 함정
 
-- **Incapsula 봇 차단** ⚠️ : 직접 `www.ercot.com` 호출 시 모든 일반 UA 403. **반드시 프록시** 필요 (EM proxy 또는 자체 Cloud Run/Workers proxy)
+- **Incapsula 봇 차단** : 직접 `www.ercot.com` 호출 시 모든 일반 UA 403. **반드시 프록시** 필요 (EM proxy 또는 자체 Cloud Run/Workers proxy)
 - **Texas DST**: 2nd Sunday Mar (CDT 시작) ~ 1st Sunday Nov (CST 복귀). JSON `timestamp` 필드의 offset이 자동 변경 → 파서는 offset만 신뢰, naive parse 금지
 - **Uri 2021 (역사적)**: 2021-02-15 ~ 02-19 Real-time energy clearing $9,000/MWh cap 도달 + ERCOT $16B over-billing 분쟁. 현재 cap **$5,000/MWh** (2023년 PUC 인하). 음수 측은 -$251 (Operating Reserve Demand Curve).
 - **5-min RTSPP lag**: SCED 결제 가격 발행 ~5분 지연 (즉, "22:15 interval ending" 가격은 22:20+ 에 publish). fuel-mix 도 비슷 (~2분 lag).
